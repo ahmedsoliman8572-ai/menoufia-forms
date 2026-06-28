@@ -463,38 +463,52 @@ openFormSettings() {
     document.getElementById('form-settings-modal').style.display = 'flex';
   },
 
-  handleLogoUpload(event) {
+  async handleLogoUpload(event) {
     const file = event.target.files[0];
     if(!file) return;
     if(file.size > 2 * 1024 * 1024) {
       this.showToast('حجم الصورة يجب أن لا يتجاوز 2 ميجابايت', 'error');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.updateFormProp('logoBase64', e.target.result);
-      const logoPreview = document.getElementById('setting-logo-preview');
-      logoPreview.innerHTML = `<img src="${e.target.result}" style="max-height:80px; border-radius:4px;">`;
-      logoPreview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
+    
+    // Show loading state
+    const logoPreview = document.getElementById('setting-logo-preview');
+    logoPreview.innerHTML = `<span style="color:var(--text-tertiary);">⏳ جاري الرفع...</span>`;
+    logoPreview.style.display = 'block';
+
+    const publicUrl = await App.uploadFile(file, `logo_${this.getForm().id}`);
+    if(publicUrl) {
+      this.updateFormProp('logoBase64', publicUrl); // Keep prop name same for backward compatibility
+      logoPreview.innerHTML = `<img src="${publicUrl}" style="max-height:80px; border-radius:4px;">`;
+    } else {
+      logoPreview.innerHTML = '';
+      logoPreview.style.display = 'none';
+    }
   },
 
-  handleCoverUpload(event) {
+  async handleCoverUpload(event) {
     const file = event.target.files[0];
     if(!file) return;
     if(file.size > 5 * 1024 * 1024) {
       this.showToast('حجم الصورة يجب أن لا يتجاوز 5 ميجابايت', 'error');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.updateFormProp('coverImageBase64', e.target.result);
-      const coverPreview = document.getElementById('setting-cover-preview');
-      coverPreview.style.backgroundImage = `url(${e.target.result})`;
-      coverPreview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
+    
+    // Show loading state
+    const coverPreview = document.getElementById('setting-cover-preview');
+    coverPreview.style.backgroundImage = 'none';
+    coverPreview.innerHTML = `<span style="color:var(--text-tertiary); display:flex; align-items:center; justify-content:center; height:100%;">⏳ جاري الرفع...</span>`;
+    coverPreview.style.display = 'block';
+
+    const publicUrl = await App.uploadFile(file, `cover_${this.getForm().id}`);
+    if(publicUrl) {
+      this.updateFormProp('coverImageBase64', publicUrl);
+      coverPreview.innerHTML = '';
+      coverPreview.style.backgroundImage = `url(${publicUrl})`;
+    } else {
+      coverPreview.innerHTML = '';
+      coverPreview.style.display = 'none';
+    }
   },
 
   
