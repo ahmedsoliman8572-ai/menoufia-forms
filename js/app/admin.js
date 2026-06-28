@@ -115,7 +115,8 @@ Object.assign(window.App, {
       ? `هل أنت متأكد من رفض طلب الانضمام وحذف الإيميل (${email})؟` 
       : `هل أنت متأكد من سحب صلاحيات الدخول من (${email})؟`;
     
-    if(!confirm(msg)) return;
+    const isConfirmed = await App.confirm(msg);
+    if(!isConfirmed) return;
 
     try {
       const { error } = await supabaseClient
@@ -134,7 +135,8 @@ Object.assign(window.App, {
   },
 
   async approveCreator(email) {
-    if(!confirm(`هل أنت متأكد من قبول طلب الانضمام لـ (${email}) وإعطائه صلاحيات مدير؟`)) return;
+    const isConfirmed = await App.confirm(`هل أنت متأكد من قبول طلب الانضمام لـ (${email}) وإعطائه صلاحيات مدير؟`);
+    if(!isConfirmed) return;
     try {
       const { error } = await supabaseClient
         .from('allowed_creators')
