@@ -456,7 +456,10 @@
         <label>كلمة المرور</label>
         <input type="password" id="auth-password" class="input" dir="ltr">
       </div>
-      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="App.loginWithEmail()">دخول</button>
+      <div style="display:flex; gap:10px; margin-bottom: 10px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="App.loginWithEmail()">دخول</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="App.signUpWithEmail()">إنشاء حساب</button>
+      </div>
       <div style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--text-tertiary);">
         <p>فقط الحسابات المصرح لها يمكنها الدخول بناءً على سياسة النظام.</p>
       </div>
