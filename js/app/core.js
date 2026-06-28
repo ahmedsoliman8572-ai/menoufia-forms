@@ -190,7 +190,7 @@ window.App = {
   async loadForms() {
     if(!this.state.currentUser) return;
     try {
-      const { data, error } = await supabaseClient.from('forms').select('*').order('updated_at', { ascending: false });
+      const { data, error } = await supabaseClient.from('forms').select('id, title, description, updated_at, created_at, folder_id, is_active, allow_resubmit, is_quiz_mode, limit_one_response, notify_email, responses_count').order('updated_at', { ascending: false });
       if (error) throw error;
       this.state.forms = data;
       this.renderDashboard();
@@ -204,7 +204,7 @@ window.App = {
     // Backward compatibility for methods that call App.save() to save theme
   },
 
-    navigate(view, params = {}) {
+  async navigate(view, params = {}) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     this.state.currentView = view;
     if(params.formId) this.state.currentFormId = params.formId;
@@ -212,7 +212,18 @@ window.App = {
     document.getElementById(`page-${view}`).classList.add('active');
     
     if(view === 'dashboard') this.renderDashboard();
-    if(view === 'builder') { this.state.selectedFieldId = null; this.renderBuilder(); }
+    if(view === 'builder') { 
+      this.state.selectedFieldId = null; 
+      const form = this.getForm();
+      if(form && !form.fields) {
+        // Fetch full form data (fields, images) if not loaded
+        const fullForm = await this.fetchFormFromCloud(form.id);
+        if(fullForm) {
+          Object.assign(form, fullForm);
+        }
+      }
+      this.renderBuilder(); 
+    }
     if(view === 'fill') this.renderFillForm();
     if(view === 'responses') this.renderResponses();
     if(view === 'admin') this.renderAdmin();
