@@ -205,13 +205,13 @@ window.App = {
       const ext = file.name.split('.').pop();
       const fileName = `${path}_${Date.now()}.${ext}`;
       const { data, error } = await supabaseClient.storage
-        .from('form-assets')
+        .from('uploads')
         .upload(fileName, file, { upsert: false });
       
       if (error) throw error;
       
       const { data: publicUrlData } = supabaseClient.storage
-        .from('form-assets')
+        .from('uploads')
         .getPublicUrl(fileName);
         
       return publicUrlData.publicUrl;
