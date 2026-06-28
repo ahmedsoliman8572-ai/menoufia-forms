@@ -135,7 +135,17 @@ Object.assign(window.App, {
       </div>
     ` : '';
 
+    let previewHtml = this.state.isPreviewMode ? `
+      <div style="position:absolute; top:20px; right:20px; z-index:10;">
+        <button class="btn btn-primary" onclick="App.state.isPreviewMode = false; App.navigate('builder', {formId: App.state.currentFormId})" title="العودة للتعديل" style="display:flex; align-items:center; gap:5px; box-shadow:var(--shadow-md);">
+          <span>↩️</span>
+          <span>العودة للتعديل</span>
+        </button>
+      </div>
+    ` : '';
+
     document.getElementById('fill-header').innerHTML = `
+      ${previewHtml}
       ${coverHtml}
       ${themeToggleHtml}
       ${logoHtml}
