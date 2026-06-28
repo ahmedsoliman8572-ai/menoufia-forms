@@ -235,7 +235,6 @@
         <!-- Charts will be generated here -->
       </div>
 
-      <!-- Table Section -->
       <div id="responses-table-container" style="display:block; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; text-align:right;">
           <thead id="responses-table-head" style="background:var(--bg-tertiary); border-bottom:2px solid var(--border);">
@@ -243,6 +242,10 @@
           <tbody id="responses-table-body">
           </tbody>
         </table>
+      </div>
+      
+      <div id="load-more-container" style="text-align:center; padding: 20px; display:none;">
+        <button id="btn-load-more-responses" class="btn btn-secondary" onclick="App.loadMoreResponses()" style="padding:10px 30px;">تحميل المزيد</button>
       </div>
 
     </div>
@@ -471,22 +474,22 @@
   <!-- ============================== -->
   <!-- APPLICATION LOGIC              -->
   <!-- ============================== -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.3/purify.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="js/validators.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/app/core.js"></script>
-  <script src="js/app/admin.js"></script>
-  <script src="js/app/i18n.js"></script>
-  <script src="js/app/dashboard.js"></script>
-  <script src="js/app/builder.js"></script>
-  <script src="js/app/fill.js"></script>
-  <script src="js/app/responses.js"></script>
-  <script src="js/app/share.js"></script>
-  <script src="js/app/compressor.js"></script>
-  <script src="js/app/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.3/purify.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="js/validators.js" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/app/core.js" defer></script>
+  <script src="js/app/admin.js" defer></script>
+  <script src="js/app/i18n.js" defer></script>
+  <script src="js/app/dashboard.js" defer></script>
+  <script src="js/app/builder.js" defer></script>
+  <script src="js/app/fill.js" defer></script>
+  <script src="js/app/responses.js" defer></script>
+  <script src="js/app/share.js" defer></script>
+  <script src="js/app/compressor.js" defer></script>
+  <script src="js/app/main.js" defer></script>
   <script>
   </script>
 </body>
