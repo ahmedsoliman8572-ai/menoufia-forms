@@ -245,9 +245,14 @@ viewResponses(formId) {
   },
 
   exportResponsesExcel() {
+    const btn = document.querySelector('#page-responses .builder-toolbar .btn-ghost');
+    const originalText = btn ? btn.innerHTML : '📊 تصدير Excel';
+    if(btn) btn.innerHTML = '⏳ جاري التصدير...';
+
     const form = this.getForm();
     if(!form || !form.submissions || form.submissions.length === 0) {
       this.showToast('لا توجد ردود لتصديرها', 'error');
+      if(btn) btn.innerHTML = originalText;
       return;
     }
 
@@ -292,5 +297,6 @@ viewResponses(formId) {
 
     // Download
     XLSX.writeFile(wb, `responses_${form.title.replace(/\s+/g, '_')}.xlsx`);
+    if(btn) btn.innerHTML = originalText;
   }
 });
