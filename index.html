@@ -78,6 +78,12 @@
             <input type="text" placeholder="ابحث في النماذج..." oninput="App.filterForms(this.value)" id="search-input" aria-label="البحث في النماذج">
           </div>
 
+          <button class="btn btn-secondary" onclick="App.navigate('contacts')" id="btn-contacts" style="padding: 10px 16px;">
+            <span>👥</span> جهات الاتصال
+          </button>
+          <button class="btn btn-secondary" onclick="App.navigate('insights')" id="btn-insights" style="padding: 10px 16px;">
+            <span>📊</span> رؤى النظام
+          </button>
           <button class="btn btn-primary" onclick="App.createBlankForm()" id="btn-new-form" style="padding: 10px 24px;">
             <span>➕</span> إنشاء نموذج جديد
           </button>
@@ -91,6 +97,65 @@
         </div>
       </div>
       <div id="forms-grid"></div>
+    </div>
+  </main>
+
+  <!-- ============================== -->
+  <!-- CONTACTS (CRM) PAGE            -->
+  <!-- ============================== -->
+  <main id="page-contacts" class="page" style="padding-top: var(--nav-height); background:var(--bg);" role="main">
+    <div class="builder-toolbar" style="border-bottom: 1px solid var(--border); background: var(--bg-card); padding: 10px 20px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="icon-btn" onclick="App.navigate('dashboard')" title="العودة للرئيسية">🏠</button>
+        <h2 style="margin:0; font-size:1.2rem;">👥 جهات الاتصال (CRM)</h2>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-primary" onclick="App.exportContactsExcel()">📊 تصدير Excel</button>
+      </div>
+    </div>
+    <div class="dashboard" style="max-width:1200px; margin:0 auto; padding: 20px;">
+      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; text-align:right;">
+          <thead style="background:var(--bg-tertiary); border-bottom:2px solid var(--border);">
+            <tr>
+              <th style="padding:12px;">الاسم</th>
+              <th style="padding:12px;">البريد الإلكتروني</th>
+              <th style="padding:12px;">رقم الهاتف</th>
+              <th style="padding:12px;">تاريخ آخر تفاعل</th>
+            </tr>
+          </thead>
+          <tbody id="contacts-table-body">
+            <tr><td colspan="4" style="text-align:center; padding:20px;">جاري التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================== -->
+  <!-- GLOBAL INSIGHTS PAGE           -->
+  <!-- ============================== -->
+  <main id="page-insights" class="page" style="padding-top: var(--nav-height); background:var(--bg);" role="main">
+    <div class="builder-toolbar" style="border-bottom: 1px solid var(--border); background: var(--bg-card); padding: 10px 20px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="icon-btn" onclick="App.navigate('dashboard')" title="العودة للرئيسية">🏠</button>
+        <h2 style="margin:0; font-size:1.2rem;">📊 رؤى النظام الشاملة</h2>
+      </div>
+    </div>
+    <div class="dashboard" style="max-width:1200px; margin:0 auto; padding: 20px;">
+      <div class="stats-grid" style="margin-bottom:30px;">
+        <div class="stat-card">
+          <h3>إجمالي الاستجابات للنظام</h3>
+          <div class="val" id="global-responses-count">...</div>
+        </div>
+        <div class="stat-card">
+          <h3>إجمالي جهات الاتصال المجمعة</h3>
+          <div class="val" id="global-contacts-count">...</div>
+        </div>
+      </div>
+      <div id="insights-charts" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(400px, 1fr)); gap:20px;">
+        <!-- Global Charts Rendered Here -->
+      </div>
     </div>
   </main>
 
@@ -482,6 +547,7 @@
   <script src="js/config.js" defer></script>
   <script src="js/app/core.js" defer></script>
   <script src="js/app/admin.js" defer></script>
+  <script src="js/app/crm.js" defer></script>
   <script src="js/app/i18n.js" defer></script>
   <script src="js/app/dashboard.js" defer></script>
   <script src="js/app/builder.js" defer></script>
