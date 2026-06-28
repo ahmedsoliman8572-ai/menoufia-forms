@@ -1,0 +1,136 @@
+/* ============================================= */
+/* DESIGN SYSTEM - CSS CUSTOM PROPERTIES         */
+/* ============================================= */
+:root {
+  /* Primary Palette - Modern Violet-Indigo */
+  --primary: #6366F1;
+  --primary-light: #A5B4FC;
+  --primary-dark: #4338CA;
+  --primary-glow: rgba(99, 102, 241, 0.25);
+  --primary-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A78BFA 100%);
+  --primary-gradient-vivid: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #EC4899 100%);
+
+  /* Secondary - Emerald */
+  --secondary: #10B981;
+  --secondary-light: #34D399;
+  --secondary-dark: #059669;
+
+  /* Accent - Amber */
+  --accent: #F59E0B;
+  --accent-light: #FCD34D;
+  --accent-dark: #D97706;
+
+  /* Status Colors */
+  --success: #10B981;
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --warning: #F59E0B;
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --error: #EF4444;
+  --error-bg: rgba(239, 68, 68, 0.1);
+  --info: #3B82F6;
+
+  /* Backgrounds */
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F1F5F9;
+  --bg-card: rgba(255, 255, 255, 0.98);
+  --bg-glass: rgba(255, 255, 255, 0.72);
+  --bg-glass-strong: rgba(255, 255, 255, 0.88);
+  --bg-input: #F8FAFC;
+  --bg-pattern: radial-gradient(rgba(99, 102, 241, 0.07) 1px, transparent 1px);
+  --bg-hero-mesh: 
+    radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(264, 98%, 70%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(174, 95%, 55%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 10% 91%, hsla(340, 90%, 68%, 0.1) 0px, transparent 50%);
+
+  /* Text */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-tertiary: #94A3B8;
+  --text-inverse: #FFFFFF;
+
+  /* Borders */
+  --border: #E2E8F0;
+  --border-light: #F1F5F9;
+  --border-focus: var(--primary);
+
+  /* Shadows - Layered & Soft */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  --shadow-glow: 0 0 24px rgba(99, 102, 241, 0.3);
+  --shadow-glow-lg: 0 0 40px rgba(99, 102, 241, 0.35);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 4px 8px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.08);
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
+
+  /* Border Radius */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-ar: 'Cairo', sans-serif;
+  --font-en: 'Inter', sans-serif;
+  --font-family: var(--font-ar);
+
+  /* Layout */
+  --nav-height: 64px;
+
+  /* Transitions */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================= */
+/* DARK MODE                                     */
+/* ============================================= */
+[data-theme="dark"], .dark-mode {
+  --bg-primary: #0B1120;
+  --bg-secondary: #131B2E;
+  --bg-tertiary: #1E293B;
+  --bg-card: rgba(19, 27, 46, 0.98);
+  --bg-glass: rgba(19, 27, 46, 0.78);
+  --bg-glass-strong: rgba(19, 27, 46, 0.92);
+  --bg-input: #0F172A;
+  --bg-pattern: radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+  --bg-hero-mesh: 
+    radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 97% 21%, hsla(264, 98%, 70%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 52% 99%, hsla(174, 95%, 55%, 0.06) 0px, transparent 50%),
+    radial-gradient(at 10% 91%, hsla(340, 90%, 68%, 0.05) 0px, transparent 50%);
+
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-tertiary: #64748B;
+
+  --border: #1E293B;
+  --border-light: #1E293B;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 6px 16px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 8px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.3);
+}
