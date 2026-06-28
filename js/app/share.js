@@ -6,9 +6,6 @@ Object.assign(window.App, {
     const form = this.getForm();
     if(!form) return;
 
-    // Sync to cloud so others can access it
-    this.saveFormToCloud(form);
-
     const shareUrl = `${window.location.origin}${window.location.pathname}?fill=${form.id}`;
     
     // Set default value immediately
