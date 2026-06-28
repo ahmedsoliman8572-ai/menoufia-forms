@@ -971,6 +971,48 @@ Object.assign(window.App, {
       try {
         const { error } = await supabaseClient.from('responses').insert([payload]);
         if(error) throw error;
+
+        // --- CRM Data Extraction ---
+        let contactName = '';
+        let contactEmail = '';
+        let contactPhone = '';
+        
+        for (let key in payloadData) {
+          const val = payloadData[key];
+          if(!val || typeof val !== 'string') continue;
+          if (key.includes('الاسم') || key.toLowerCase().includes('name')) {
+            if(!contactName) contactName = val;
+          }
+          if (key.includes('البريد') || key.toLowerCase().includes('email')) {
+            if(!contactEmail && val.includes('@')) contactEmail = val;
+          }
+          if (key.includes('رقم') || key.includes('موبايل') || key.includes('هاتف') || key.toLowerCase().includes('phone') || key.includes('واتساب')) {
+            if(!contactPhone && val.match(/^[0-9+ ]{8,15}$/)) contactPhone = val;
+          }
+        }
+
+        if (contactName || contactEmail || contactPhone) {
+          try {
+            // If email exists, we upsert based on email
+            const contactPayload = { 
+              name: contactName || 'مجهول', 
+              email: contactEmail || null, 
+              phone: contactPhone || null,
+              updated_at: new Date().toISOString()
+            };
+            if(contactEmail) {
+              await supabaseClient.from('contacts').upsert(contactPayload, { onConflict: 'email' });
+            } else {
+              // no email, just insert to avoid unique constraint issues if email is null 
+              // (wait, nulls are usually distinct in postgres so it's fine, but upsert without conflict key on phone isn't set up)
+              await supabaseClient.from('contacts').insert([contactPayload]);
+            }
+          } catch(err) {
+            console.error('CRM Insert Error:', err);
+          }
+        }
+        // -----------------------------
+
       } catch(e) {
         console.error('Failed to submit response:', e);
         this.showToast('حدث خطأ أثناء الإرسال', 'error');
@@ -1054,14 +1096,14 @@ Object.assign(window.App, {
 
       // Upload to Supabase Storage
       const { data, error } = await supabaseClient.storage
-        .from('uploads')
+        .from('form-assets')
         .upload(filePath, file);
 
       if (error) throw error;
 
       // Get public URL
       const { data: { publicUrl } } = supabaseClient.storage
-        .from('uploads')
+        .from('form-assets')
         .getPublicUrl(filePath);
 
       previewImg.src = publicUrl;
