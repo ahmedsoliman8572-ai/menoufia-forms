@@ -52,14 +52,19 @@ Object.assign(window.App, {
         <tr>
           <td style="padding:10px; border:1px solid var(--border); direction:ltr; text-align:right;">${this.escape(creator.email)}</td>
           <td style="padding:10px; border:1px solid var(--border);">
-            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'super_admin' ? 'var(--primary)' : 'var(--bg-secondary)'}; color: ${creator.role === 'super_admin' ? '#fff' : 'var(--text)'};">
-              ${creator.role === 'super_admin' ? 'مدير عام 👑' : 'مدير عادي'}
+            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'super_admin' ? 'var(--primary)' : creator.role === 'pending' ? 'var(--warning)' : 'var(--bg-secondary)'}; color: ${creator.role === 'super_admin' || creator.role === 'pending' ? '#fff' : 'var(--text)'};">
+              ${creator.role === 'super_admin' ? 'مدير عام 👑' : creator.role === 'pending' ? 'في الانتظار ⏳' : 'مدير عادي'}
             </span>
           </td>
           <td style="padding:10px; border:1px solid var(--border); text-align:center;">
+            <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
             ${creator.email === this.state.currentUser.email 
               ? `<span style="color:var(--text-tertiary); font-size:0.8rem;">(أنت)</span>` 
-              : `<button class="btn btn-danger btn-sm" onclick="App.deleteCreator('${creator.email}')">🗑️ حذف</button>`}
+              : creator.role === 'pending'
+                ? `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.approveCreator('${creator.email}')">✅ قبول</button>
+                   <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}', true)">❌ رفض</button>`
+                : `<button class="btn btn-danger btn-sm" onclick="App.deleteCreator('${creator.email}')">🗑️ حذف</button>`}
+            </div>
           </td>
         </tr>
       `).join('');
@@ -105,8 +110,12 @@ Object.assign(window.App, {
     }
   },
 
-  async deleteCreator(email) {
-    if(!confirm(`هل أنت متأكد من سحب صلاحيات الدخول من (${email})؟`)) return;
+  async deleteCreator(email, isReject = false) {
+    const msg = isReject 
+      ? `هل أنت متأكد من رفض طلب الانضمام وحذف الإيميل (${email})؟` 
+      : `هل أنت متأكد من سحب صلاحيات الدخول من (${email})؟`;
+    
+    if(!confirm(msg)) return;
 
     try {
       const { error } = await supabaseClient
@@ -116,11 +125,29 @@ Object.assign(window.App, {
 
       if(error) throw error;
 
-      this.showToast('تم حذف المشرف بنجاح', 'success');
+      this.showToast(isReject ? 'تم رفض الطلب وحذفه بنجاح' : 'تم حذف المشرف بنجاح', 'success');
       this.loadCreators();
     } catch(e) {
       console.error(e);
       this.showToast('حدث خطأ أثناء الحذف', 'error');
+    }
+  },
+
+  async approveCreator(email) {
+    if(!confirm(`هل أنت متأكد من قبول طلب الانضمام لـ (${email}) وإعطائه صلاحيات مدير؟`)) return;
+    try {
+      const { error } = await supabaseClient
+        .from('allowed_creators')
+        .update({ role: 'admin' })
+        .eq('email', email);
+
+      if (error) throw error;
+      
+      this.showToast('تم قبول المشرف بنجاح', 'success');
+      this.loadCreators();
+    } catch(e) {
+      console.error(e);
+      this.showToast('حدث خطأ أثناء القبول', 'error');
     }
   }
 });
