@@ -329,54 +329,6 @@ showToast(msg, type='info') {
 
 
 
-  async queueGoogleSync(payload) {
-    if (!window.idbKeyval) return;
-    let queue = await idbKeyval.get('google_sync_queue') || [];
-    queue.push(payload);
-    await idbKeyval.set('google_sync_queue', queue);
-    this.processSyncQueue();
-  },
-
-  async processSyncQueue() {
-    if (!navigator.onLine || !window.idbKeyval) return;
-    if (this.isSyncing) return;
-    this.isSyncing = true;
-
-    try {
-      let queue = await idbKeyval.get('google_sync_queue') || [];
-      if (queue.length === 0) {
-        this.isSyncing = false;
-        return;
-      }
-
-      // Process one by one or batch
-      const remainingQueue = [];
-      for (const payload of queue) {
-        try {
-          await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        } catch(e) {
-          remainingQueue.push(payload);
-        }
-      }
-      
-      await idbKeyval.set('google_sync_queue', remainingQueue);
-      if (queue.length > remainingQueue.length && remainingQueue.length === 0) {
-        // Only show if we successfully synced something and queue is clear
-        if (this.state.currentView !== 'fill') {
-           this.showToast('تمت المزامنة بنجاح 🔄', 'success');
-        }
-      }
-    } catch(e) {
-      console.error('Sync queue error:', e);
-    }
-    
-    this.isSyncing = false;
-  },
 
   async fetchFormFromCloud(formId) {
     try {
@@ -390,49 +342,7 @@ showToast(msg, type='info') {
     }
   },
 
-  async fetchAllFormsFromCloud() {
-    try {
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAllForms&_t=${Date.now()}`);
-      const data = await response.json();
-      if (data.status === 'success' && data.forms) {
-        return data.forms;
-      }
-      return [];
-    } catch(e) {
-      console.error('Failed to fetch all forms from cloud:', e);
-      return [];
-    }
-  },
 
-  async syncDashboardForms() {
-    const cloudForms = await this.fetchAllFormsFromCloud();
-    if (cloudForms && cloudForms.length > 0) {
-      const localFormsMap = new Map(this.state.forms.map(f => [f.id, f]));
-      cloudForms.forEach(f => localFormsMap.set(f.id, f)); // Cloud forms overwrite local forms
-      this.state.forms = Array.from(localFormsMap.values());
-      
-      // Sort by creation date
-      this.state.forms.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      
-      this.save();
-      if (this.state.currentView === 'dashboard') {
-        this.renderDashboard();
-      }
-    }
-  },
-
-  async saveFormToCloud(form) {
-    try {
-      // Use text/plain to avoid CORS preflight, script will parse as JSON
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'saveForm', form: form })
-      });
-    } catch(e) {
-      console.error('Failed to save form to cloud:', e);
-    }
-  },
 
   showConfetti() {
     const colors = ['#6366F1', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#EF4444'];
