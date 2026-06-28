@@ -71,7 +71,7 @@
   /* Sidebar as bottom sheet */
   .builder-sidebar {
     position: fixed;
-    width: 100%; left: 0; right: 0; bottom: 0; top: auto;
+    left: 0; right: 0; bottom: 0; top: auto;
     height: 65vh; max-height: none;
     transform: translateY(100%);
     border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
@@ -91,7 +91,7 @@
   /* Builder settings as bottom sheet on mobile */
   .builder-settings {
     position: fixed;
-    width: 100%; left: 0; right: 0;
+    left: 0; right: 0;
     top: auto; bottom: 0;
     height: 75vh;
     transform: translateY(100%);
