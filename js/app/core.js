@@ -55,6 +55,8 @@ window.App = {
     const userEmail = document.getElementById('nav-user-email');
     const newFormBtn = document.getElementById('btn-new-form');
     const adminPanelBtn = document.getElementById('nav-admin-panel-btn');
+    const btnContacts = document.getElementById('btn-contacts');
+    const btnInsights = document.getElementById('btn-insights');
 
     if (this.state.currentUser) {
       let isAuthorized = false;
@@ -95,6 +97,8 @@ window.App = {
         if(userEmail) userEmail.innerText = this.state.currentUser.email;
         if(newFormBtn) newFormBtn.style.display = 'inline-flex';
         if(adminPanelBtn) adminPanelBtn.style.display = this.state.userRole === 'super_admin' ? 'inline-block' : 'none';
+        if(btnContacts) btnContacts.style.display = 'inline-flex';
+        if(btnInsights) btnInsights.style.display = 'inline-flex';
         
         if(this.state.currentView === 'dashboard') {
           this.loadForms();
@@ -106,6 +110,8 @@ window.App = {
       if(userEmail) userEmail.innerText = '';
       if(newFormBtn) newFormBtn.style.display = 'none';
       if(adminPanelBtn) adminPanelBtn.style.display = 'none';
+      if(btnContacts) btnContacts.style.display = 'none';
+      if(btnInsights) btnInsights.style.display = 'none';
       this.state.forms = [];
       if(this.state.currentView !== 'fill') {
         this.navigate('dashboard');
