@@ -425,5 +425,30 @@ Object.assign(window.App, {
     setTimeout(() => container.remove(), 5000);
   },
 
+  confirm(message) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('confirm-modal');
+      const msgEl = document.getElementById('confirm-modal-message');
+      const btnOk = document.getElementById('confirm-modal-ok');
+      const btnCancel = document.getElementById('confirm-modal-cancel');
+      
+      if (!modal) return resolve(window.confirm(message)); // Fallback
+
+      msgEl.innerText = message;
+      modal.style.display = 'flex';
+
+      const cleanup = () => {
+        modal.style.display = 'none';
+        btnOk.removeEventListener('click', onOk);
+        btnCancel.removeEventListener('click', onCancel);
+      };
+
+      const onOk = () => { cleanup(); resolve(true); };
+      const onCancel = () => { cleanup(); resolve(false); };
+
+      btnOk.addEventListener('click', onOk);
+      btnCancel.addEventListener('click', onCancel);
+    });
+  }
   
 });
