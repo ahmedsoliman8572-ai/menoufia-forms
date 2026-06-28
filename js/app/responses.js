@@ -24,6 +24,29 @@ viewResponses(formId) {
       .subscribe();
   },
 
+  async loadMoreResponses() {
+    const form = this.getForm();
+    if(!form) return;
+    const limit = 50;
+    const offset = form.submissions ? form.submissions.length : 0;
+    const btn = document.getElementById('btn-load-more-responses');
+    if(btn) { btn.innerText = '⏳ جاري التحميل...'; btn.disabled = true; }
+    
+    try {
+      const { data, error } = await supabaseClient.from('responses').select('*').eq('form_id', form.id).order('submitted_at', { ascending: false }).range(offset, offset + limit - 1);
+      if (error) throw error;
+      
+      const newSubmissions = data.map(row => ({ submittedAt: row.submitted_at, data: row.data }));
+      form.submissions = (form.submissions || []).concat(newSubmissions);
+      this.renderResponses(true);
+    } catch(e) {
+      console.error(e);
+      if(this.showToast) this.showToast('حدث خطأ أثناء تحميل المزيد', 'error');
+    } finally {
+      if(btn) { btn.innerText = 'تحميل المزيد'; btn.disabled = false; }
+    }
+  },
+
   async renderResponses(skipFetch = false) {
     const form = this.getForm();
     if(!form) return this.navigate('dashboard');
@@ -41,22 +64,34 @@ viewResponses(formId) {
     }
 
     let submissions = form.submissions || [];
+    const limit = 50;
     if(!skipFetch) {
       try {
-        const { data, error } = await supabaseClient.from('responses').select('*').eq('form_id', form.id).order('submitted_at', { ascending: false });
+        const { data, error, count } = await supabaseClient.from('responses').select('*', { count: 'exact' }).eq('form_id', form.id).order('submitted_at', { ascending: false }).range(0, limit - 1);
         if (error) throw error;
         
         submissions = data.map(row => {
           return { submittedAt: row.submitted_at, data: row.data };
         });
         form.submissions = submissions;
+        form.responsesCount = count || submissions.length;
       } catch(e) {
         console.error('Failed to fetch responses', e);
         submissions = form.submissions || [];
+        form.responsesCount = submissions.length;
       }
     }
 
-    document.getElementById('responses-count-val').innerText = submissions.length;
+    document.getElementById('responses-count-val').innerText = form.responsesCount || submissions.length;
+    
+    const loadMoreContainer = document.getElementById('load-more-container');
+    if (loadMoreContainer) {
+      if (form.submissions && form.responsesCount && form.submissions.length < form.responsesCount) {
+        loadMoreContainer.style.display = 'block';
+      } else {
+        loadMoreContainer.style.display = 'none';
+      }
+    }
 
     if(submissions.length === 0) {
       thead.innerHTML = '';
