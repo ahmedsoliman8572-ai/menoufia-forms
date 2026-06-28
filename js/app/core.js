@@ -11,7 +11,6 @@ window.App = {
     currentUser: null,
     currentView: 'dashboard',
     forms: [],
-    folders: [],
     responses: {},
     stats: { totalSubmissions: 0, totalFormsCreated: 0 },
     settings: { theme: 'light', lang: 'ar' },
