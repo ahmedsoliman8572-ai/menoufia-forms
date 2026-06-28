@@ -49,7 +49,7 @@ window.App = {
 
   async updateAuthState(session) {
     this.state.currentUser = session?.user || null;
-    this.state.userRole = 'admin'; // default
+    this.state.userRole = null; // reset role
 
     const loginBtn = document.getElementById('nav-login-btn');
     const userInfo = document.getElementById('nav-user-info');
@@ -58,22 +58,48 @@ window.App = {
     const adminPanelBtn = document.getElementById('nav-admin-panel-btn');
 
     if (this.state.currentUser) {
+      let isAuthorized = false;
+
       // Fetch user role
       try {
-        const { data } = await supabaseClient.from('allowed_creators').select('role').eq('email', this.state.currentUser.email).single();
-        if(data && data.role) {
+        const { data, error } = await supabaseClient.from('allowed_creators').select('role').eq('email', this.state.currentUser.email).single();
+        
+        if (error || !data) {
+          // User not found in allowed_creators, set them as pending
+          await supabaseClient.from('allowed_creators').insert([{ email: this.state.currentUser.email, role: 'pending' }]);
+          await supabaseClient.auth.signOut();
+          this.state.currentUser = null;
+          this.showToast('تم إرسال طلب انضمامك للإدارة. يرجى الانتظار لحين الموافقة.', 'info');
+          return; // Stop execution
+        } else if (data.role === 'pending') {
+          // User is pending approval
+          await supabaseClient.auth.signOut();
+          this.state.currentUser = null;
+          this.showToast('طلب الانضمام الخاص بك قيد المراجعة من قبل الإدارة.', 'info');
+          return; // Stop execution
+        } else {
+          // User is authorized
           this.state.userRole = data.role;
+          isAuthorized = true;
         }
-      } catch(e) { console.error("Error fetching role", e); }
+      } catch(e) { 
+        console.error("Error fetching role", e);
+        await supabaseClient.auth.signOut();
+        this.state.currentUser = null;
+        this.showToast('حدث خطأ أثناء التحقق من الصلاحيات.', 'error');
+        return;
+      }
 
-      if(loginBtn) loginBtn.style.display = 'none';
-      if(userInfo) userInfo.style.display = 'flex';
-      if(userEmail) userEmail.innerText = this.state.currentUser.email;
-      if(newFormBtn) newFormBtn.style.display = 'inline-flex';
-      if(adminPanelBtn) adminPanelBtn.style.display = this.state.userRole === 'super_admin' ? 'inline-block' : 'none';
-      
-      if(this.state.currentView === 'dashboard') {
-        this.loadForms();
+      if (isAuthorized) {
+        if(loginBtn) loginBtn.style.display = 'none';
+        if(userInfo) userInfo.style.display = 'flex';
+        if(userEmail) userEmail.innerText = this.state.currentUser.email;
+        if(newFormBtn) newFormBtn.style.display = 'inline-flex';
+        if(adminPanelBtn) adminPanelBtn.style.display = this.state.userRole === 'super_admin' ? 'inline-block' : 'none';
+        
+        if(this.state.currentView === 'dashboard') {
+          this.loadForms();
+        }
       }
     } else {
       if(loginBtn) loginBtn.style.display = 'inline-block';
@@ -122,6 +148,34 @@ window.App = {
       } else {
         document.getElementById('auth-modal').style.display = 'none';
         this.showToast('تم تسجيل الدخول بنجاح', 'success');
+      }
+    } catch(err) {
+      this.showToast('حدث خطأ أثناء الاتصال', 'error');
+    }
+  },
+
+  async signUpWithEmail() {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    if(!email || !password) return this.showToast('يرجى إدخال البريد وكلمة المرور', 'warning');
+    if(password.length < 6) return this.showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'warning');
+    
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      if (error) {
+        if(error.message.includes('User already registered')) {
+          this.showToast('هذا البريد مسجل بالفعل، يرجى تسجيل الدخول', 'error');
+        } else {
+          this.showToast(error.message, 'error');
+        }
+      } else {
+        document.getElementById('auth-modal').style.display = 'none';
+        if (data?.session) {
+          // It will automatically trigger updateAuthState and handle pending logic
+        } else {
+          // If email confirmation is required by Supabase settings
+          this.showToast('تم التسجيل بنجاح! يرجى مراجعة بريدك الإلكتروني لتأكيد الحساب.', 'success');
+        }
       }
     } catch(err) {
       this.showToast('حدث خطأ أثناء الاتصال', 'error');
