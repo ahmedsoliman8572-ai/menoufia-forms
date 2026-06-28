@@ -21,6 +21,7 @@ Object.assign(window.App, {
       if (form) {
         // Form fetched successfully! We don't save it to local forms so we don't clutter the user's dashboard,
         // but we just render it. 
+        this.state.currentFillForm = form;
       } else {
         if (header) header.innerHTML = '';
         if (body) {
