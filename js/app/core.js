@@ -197,6 +197,9 @@ window.App = {
     try {
       const { data, error } = await supabaseClient.from('forms').select('*').order('updated_at', { ascending: false });
       if (error) throw error;
+      data.forEach(f => {
+        if(f.settings) Object.assign(f, f.settings);
+      });
       this.state.forms = data;
       this.renderDashboard();
     } catch(err) {
@@ -381,7 +384,10 @@ Object.assign(window.App, {
     try {
       const { data, error } = await supabaseClient.from('forms').select('*').eq('id', formId).single();
       if (error) throw error;
-      if (data) return data;
+      if (data) {
+        if(data.settings) Object.assign(data, data.settings);
+        return data;
+      }
       return null;
     } catch(e) {
       console.error('Failed to fetch form from cloud:', e);
