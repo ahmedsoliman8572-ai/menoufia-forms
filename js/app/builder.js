@@ -2,7 +2,9 @@
 // FORM BUILDER & HISTORY
 // =============================================
 Object.assign(window.App, {
-  getForm() { return this.state.forms.find(f => f.id === this.state.currentFormId); },
+  getForm() { 
+    return this.state.forms.find(f => f.id === this.state.currentFormId) || (this.state.currentFillForm?.id === this.state.currentFormId ? this.state.currentFillForm : undefined); 
+  },
 
   updateFormTitle(value) {
     const form = this.getForm();
