@@ -115,7 +115,8 @@ Object.assign(window.App, {
 
 
   async deleteForm(id) {
-    if(confirm('هل أنت متأكد من حذف هذا النموذج نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) {
+    const isConfirmed = await App.confirm('هل أنت متأكد من حذف هذا النموذج نهائياً؟ لا يمكن التراجع عن هذا الإجراء.');
+    if(isConfirmed) {
       try {
         const { error } = await supabaseClient.from('forms').delete().eq('id', id);
         if(error) throw error;
@@ -133,7 +134,8 @@ Object.assign(window.App, {
   async deleteCurrentForm() {
     const formId = this.state.currentFormId;
     if(formId) {
-      if(confirm('هل أنت متأكد من حذف هذا النموذج نهائياً؟')) {
+      const isConfirmed = await App.confirm('هل أنت متأكد من حذف هذا النموذج نهائياً؟');
+      if(isConfirmed) {
         try {
           const { error } = await supabaseClient.from('forms').delete().eq('id', formId);
           if(error) throw error;
