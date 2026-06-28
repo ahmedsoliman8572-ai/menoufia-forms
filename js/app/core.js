@@ -195,7 +195,7 @@ window.App = {
   async loadForms() {
     if(!this.state.currentUser) return;
     try {
-      const { data, error } = await supabaseClient.from('forms').select('id, title, description, updated_at, created_at, is_active, allow_resubmit, is_quiz_mode, limit_one_response, notify_email, responses_count').order('updated_at', { ascending: false });
+      const { data, error } = await supabaseClient.from('forms').select('*').order('updated_at', { ascending: false });
       if (error) throw error;
       this.state.forms = data;
       this.renderDashboard();
