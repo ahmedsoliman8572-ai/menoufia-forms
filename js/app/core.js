@@ -200,6 +200,28 @@ window.App = {
     }
   },
 
+  async uploadFile(file, path) {
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `${path}_${Date.now()}.${ext}`;
+      const { data, error } = await supabaseClient.storage
+        .from('form-assets')
+        .upload(fileName, file, { upsert: false });
+      
+      if (error) throw error;
+      
+      const { data: publicUrlData } = supabaseClient.storage
+        .from('form-assets')
+        .getPublicUrl(fileName);
+        
+      return publicUrlData.publicUrl;
+    } catch (e) {
+      console.error("Storage upload error:", e);
+      if(this.showToast) this.showToast('حدث خطأ أثناء رفع الملف', 'error');
+      return null;
+    }
+  },
+
   async save() {
     // Backward compatibility for methods that call App.save() to save theme
   },
@@ -227,6 +249,8 @@ window.App = {
     if(view === 'fill') this.renderFillForm();
     if(view === 'responses') this.renderResponses();
     if(view === 'admin') this.renderAdmin();
+    if(view === 'contacts') this.loadContacts();
+    if(view === 'insights') this.loadInsights();
     window.scrollTo(0,0);
 
     // Close mobile menu
