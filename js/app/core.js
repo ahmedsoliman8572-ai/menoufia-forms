@@ -330,8 +330,15 @@ window.App = {
 };
 
 Object.assign(window.App, {
-showToast(msg, type='info') {
+  showToast(msg, type='info') {
     const c = document.getElementById('toast-container');
+    
+    // Prevent duplicate exact messages showing at the same time
+    const existingToasts = Array.from(c.querySelectorAll('.toast span'));
+    if (existingToasts.some(span => span.innerText.includes(msg))) {
+      return; 
+    }
+
     const t = document.createElement('div');
     t.className = `toast ${type}`;
     t.innerHTML = `
