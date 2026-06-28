@@ -178,8 +178,8 @@ window.App = {
         if (data?.session) {
           // It will automatically trigger updateAuthState and handle pending logic
         } else {
-          // If email confirmation is required by Supabase settings
-          this.showToast('تم التسجيل بنجاح! يرجى مراجعة بريدك الإلكتروني لتأكيد الحساب.', 'success');
+          // Supabase didn't return a session. The DB trigger will handle confirmation and pending state.
+          this.showToast('تم التسجيل بنجاح! تم إرسال طلبك للإدارة، يرجى الانتظار لحين الموافقة لتتمكن من الدخول.', 'success');
         }
       }
     } catch(err) {
