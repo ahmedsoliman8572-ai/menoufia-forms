@@ -218,7 +218,7 @@ Object.assign(window.App, {
             <div class="option-edit-list">
               ${(field.options||[]).map((opt, i) => `
                 <div class="option-edit-item">
-                  <input type="text" class="form-control" value="${this.escape(opt)}" oninput="App.updateOption('${field.id}', ${i}, this.value)" ${isSmart ? 'readonly title="لا يمكن تعديل خيارات الحقل الذكي"' : ''}>
+                  <input type="text" class="form-control" value="${this.escape(opt)}" oninput="App.updateOption('${field.id}', ${i}, this.value)" onkeydown="if(event.key === 'Enter') { event.preventDefault(); App.addOption('${field.id}'); }" ${isSmart ? 'readonly title="لا يمكن تعديل خيارات الحقل الذكي"' : ''}>
                   ${!isSmart ? `<button class="icon-btn" style="color:var(--error)" onclick="App.removeOption('${field.id}', ${i})">✕</button>` : ''}
                 </div>
               `).join('')}
