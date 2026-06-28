@@ -9,8 +9,4 @@ window.onload = async () => {
   }
 };
 
-window.addEventListener('online', () => {
-  if (typeof App.processSyncQueue === 'function') {
-    App.processSyncQueue();
-  }
-});
+
