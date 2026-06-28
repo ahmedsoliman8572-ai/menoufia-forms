@@ -44,10 +44,17 @@ Object.assign(window.App, {
   },
 
   exportContactsExcel() {
+    const btn = document.querySelector('#page-contacts .builder-toolbar .btn-primary');
+    const originalText = btn ? btn.innerHTML : '📊 تصدير Excel';
+    if(btn) btn.innerHTML = '⏳ جاري التصدير...';
+    
     this.showToast('سيتم تحميل الملف قريباً...', 'info');
     setTimeout(() => {
       const table = document.querySelector('#page-contacts table');
-      if(!table) return;
+      if(!table) {
+        if(btn) btn.innerHTML = originalText;
+        return;
+      }
       let csv = [];
       const rows = table.querySelectorAll('tr');
       for (let i = 0; i < rows.length; i++) {
@@ -57,7 +64,8 @@ Object.assign(window.App, {
         csv.push(row.join(','));
       }
       this.downloadCSV(csv.join('\n'), `Contacts_${new Date().toISOString().split('T')[0]}.csv`);
-    }, 500);
+      if(btn) btn.innerHTML = originalText;
+    }, 800);
   },
 
   async loadInsights() {
