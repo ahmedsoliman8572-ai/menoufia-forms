@@ -78,10 +78,10 @@
             <input type="text" placeholder="ابحث في النماذج..." oninput="App.filterForms(this.value)" id="search-input" aria-label="البحث في النماذج">
           </div>
 
-          <button class="btn btn-secondary" onclick="App.navigate('contacts')" id="btn-contacts" style="padding: 10px 16px;">
+          <button class="btn btn-secondary" onclick="App.navigate('contacts')" id="btn-contacts" style="padding: 10px 16px; display: none;">
             <span>👥</span> جهات الاتصال
           </button>
-          <button class="btn btn-secondary" onclick="App.navigate('insights')" id="btn-insights" style="padding: 10px 16px;">
+          <button class="btn btn-secondary" onclick="App.navigate('insights')" id="btn-insights" style="padding: 10px 16px; display: none;">
             <span>📊</span> رؤى النظام
           </button>
           <button class="btn btn-primary" onclick="App.createBlankForm()" id="btn-new-form" style="padding: 10px 24px;">
