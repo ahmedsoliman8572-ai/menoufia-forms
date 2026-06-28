@@ -32,53 +32,30 @@ Object.assign(window.App, {
     renderDashboard() {
     const grid = document.getElementById('forms-grid');
 
-
-    // Folders UI
-    const currentFolder = this.state.currentFolder || null;
-    let foldersHtml = `
-      <div style="display:flex; gap:10px; margin-bottom:20px; overflow-x:auto; padding-bottom:10px; border-bottom:1px solid var(--border);">
-        <button class="btn ${currentFolder === null ? 'btn-primary' : 'btn-ghost'}" onclick="App.state.currentFolder=null; App.renderDashboard()">الكل</button>
-        ${this.state.folders.map(f => `
-          <button class="btn ${currentFolder === f.id ? 'btn-primary' : 'btn-ghost'}" onclick="App.state.currentFolder='${f.id}'; App.renderDashboard()">${this.escape(f.name)}</button>
-        `).join('')}
-        <button class="btn btn-ghost" onclick="App.createFolder()">+ مجلد جديد</button>
-      </div>
-    `;
-
-    // Filter forms by folder
-    const filteredForms = currentFolder 
-      ? this.state.forms.filter(f => f.folderId === currentFolder)
-      : this.state.forms;
-
-    let html = foldersHtml + `
+    let html = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
         <h3 style="margin:0;">النماذج الخاصة بك</h3>
-        <div style="display:flex; gap: 8px;">
-          ${this.state.forms.length > 0 ? `<button class="btn btn-danger btn-sm" onclick="App.deleteAllForms()">🗑️ مسح الكل</button>` : ''}
-        </div>
       </div>
     `;
 
-
-
     html += `<div class="forms-grid">`;
-    filteredForms.forEach(form => {
+    this.state.forms.forEach(form => {
       const date = new Date(form.createdAt).toLocaleDateString('ar-EG');
-      const responsesCount = form.submissions ? form.submissions.length : 0;
+      const responsesCount = form.responses_count || (form.submissions ? form.submissions.length : 0);
       html += `
-        <div class="form-card" onclick="App.navigate('builder', {formId: '${form.id}'})">
-          <div class="form-card-actions">
+        <div class="form-card" onclick="App.navigate('builder', {formId: '${form.id}'})" style="position:relative;">
+          <button class="del-btn-x" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف النموذج نهائياً" style="position:absolute; top:10px; left:10px; width:28px; height:28px; border-radius:50%; background:rgba(239,68,68,0.1); color:var(--danger); border:none; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer; z-index:10; transition:0.2s;" onmouseenter="this.style.background='rgba(239,68,68,0.2)'; this.style.transform='scale(1.1)';" onmouseleave="this.style.background='rgba(239,68,68,0.1)'; this.style.transform='scale(1)';">✕</button>
+          <div class="form-card-actions" style="margin-left: 30px;">
             <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">🔗</button>
             <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>
             <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">📊</button>
             <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">👁️</button>
-            <button class="del-btn" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف">🗑️</button>
           </div>
           <div class="form-card-banner">📝</div>
           <div class="form-card-body">
             <div class="form-card-title">${this.escape(form.title)}</div>
             <div class="form-card-meta">
-              <span>${form.fields.length} حقول · ${responsesCount} رد</span>
+              <span>${form.fields ? form.fields.length : 0} حقول · ${responsesCount} رد</span>
               <span>${date}</span>
             </div>
           </div>
@@ -87,31 +64,6 @@ Object.assign(window.App, {
     });
     html += `</div>`;
     grid.innerHTML = html;
-
-
-  },
-
-  createFolder() {
-    const modal = document.getElementById('folder-modal');
-    const input = document.getElementById('folder-name-input');
-    if(modal && input) {
-      input.value = '';
-      modal.style.display = 'flex';
-      setTimeout(() => input.focus(), 100);
-    }
-  },
-
-  confirmCreateFolder() {
-    const input = document.getElementById('folder-name-input');
-    if(!input) return;
-    const name = input.value;
-    if(name && name.trim()) {
-      this.state.folders.push({ id: 'folder_' + Date.now(), name: name.trim() });
-      this.save();
-      this.renderDashboard();
-      this.showToast('تم إنشاء المجلد بنجاح 📁', 'success');
-      document.getElementById('folder-modal').style.display = 'none';
-    }
   },
 
 
@@ -197,22 +149,7 @@ Object.assign(window.App, {
     }
   },
 
-  async deleteAllForms() {
-    if(!this.state.currentUser) return;
-    if(confirm('هل أنت متأكد من مسح جميع النماذج نهائياً؟ لا يمكن التراجع!')) {
-      try {
-        const { error } = await supabaseClient.from('forms').delete().eq('user_id', this.state.currentUser.id);
-        if(error) throw error;
-        
-        this.state.forms = [];
-        this.renderDashboard();
-        this.showToast('تم حذف جميع النماذج 🗑️', 'success');
-      } catch(err) {
-        console.error(err);
-        this.showToast('حدث خطأ أثناء مسح النماذج', 'error');
-      }
-    }
-  },
+
 
   duplicateForm(id) {
     const form = this.state.forms.find(f => f.id === id);
