@@ -355,6 +355,12 @@ Object.assign(window.App, {
     const form = this.getForm();
     if(!form) return;
     
+    if (!form.settings) form.settings = {};
+    const settingProps = ['logoBase64', 'coverImageBase64', 'themeColor', 'backgroundStyle', 'darkModeEnabled', 'thankYouMessage', 'redirectUrl', 'allowResubmit', 'limitOneResponse', 'isQuizMode', 'maxResponses', 'deadline'];
+    settingProps.forEach(p => {
+      if (form[p] !== undefined) form.settings[p] = form[p];
+    });
+
     try {
       const { error } = await supabaseClient.from('forms').update({
         title: form.title,
