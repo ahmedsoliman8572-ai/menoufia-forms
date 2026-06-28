@@ -97,8 +97,8 @@ window.App = {
         if(userEmail) userEmail.innerText = this.state.currentUser.email;
         if(newFormBtn) newFormBtn.style.display = 'inline-flex';
         if(adminPanelBtn) adminPanelBtn.style.display = this.state.userRole === 'super_admin' ? 'inline-block' : 'none';
-        if(btnContacts) btnContacts.style.display = 'inline-flex';
-        if(btnInsights) btnInsights.style.display = 'inline-flex';
+        if(btnContacts) btnContacts.style.display = this.state.userRole === 'super_admin' ? 'inline-flex' : 'none';
+        if(btnInsights) btnInsights.style.display = this.state.userRole === 'super_admin' ? 'inline-flex' : 'none';
         
         if(this.state.currentView === 'dashboard') {
           this.loadForms();
