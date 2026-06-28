@@ -1096,14 +1096,14 @@ Object.assign(window.App, {
 
       // Upload to Supabase Storage
       const { data, error } = await supabaseClient.storage
-        .from('form-assets')
+        .from('uploads')
         .upload(filePath, file);
 
       if (error) throw error;
 
       // Get public URL
       const { data: { publicUrl } } = supabaseClient.storage
-        .from('form-assets')
+        .from('uploads')
         .getPublicUrl(filePath);
 
       previewImg.src = publicUrl;
