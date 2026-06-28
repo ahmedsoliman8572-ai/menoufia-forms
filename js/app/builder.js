@@ -442,7 +442,6 @@ openFormSettings() {
     document.getElementById('setting-allow-resubmit').checked = form.allowResubmit !== false;
     document.getElementById('setting-max-responses').value = form.maxResponses || '';
     document.getElementById('setting-deadline').value = form.deadline || '';
-    document.getElementById('setting-notify-email').value = form.notifyEmail || '';
     
     const logoPreview = document.getElementById('setting-logo-preview');
     if(form.logoBase64) {
