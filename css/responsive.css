@@ -122,11 +122,19 @@
 
 /* Mobile Phones */
 @media (max-width: 480px) {
-  :root { --nav-height: 56px; }
+  :root { --nav-height: 60px; }
   #nav-user-email { display: none !important; }
-  .nav-brand { font-size: 1.1rem; }
-  .nav-brand-icon { width: 32px; height: 32px; font-size: 1rem; }
-  .icon-btn { width: 36px; height: 36px; }
+  .nav-brand { font-size: 0.95rem; gap: 6px; }
+  .nav-brand-icon { width: 28px; height: 28px; font-size: 0.9rem; margin-right: 0 !important; }
+  .nav-brand span:not(.nav-brand-icon) { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #nav-login-btn { padding: 6px 10px !important; font-size: 0.8rem !important; }
+  .icon-btn { width: 34px; height: 34px; font-size: 0.8rem; }
+  .nav-actions { gap: 6px; }
+  
+  .dash-header > div { flex-direction: column; align-items: stretch !important; gap: 10px; }
+  .search-bar { width: 100%; min-width: 100%; }
+  #btn-new-form { width: 100%; }
+
   .hero-title { font-size: 1.8rem; }
   .hero-desc { font-size: 0.95rem; }
   .form-field-group { padding: 14px; }
