@@ -373,7 +373,7 @@ Object.assign(window.App, {
     if(!form) return;
     
     if (!form.settings) form.settings = {};
-    const settingProps = ['logoBase64', 'coverImageBase64', 'themeColor', 'backgroundStyle', 'darkModeEnabled', 'thankYouMessage', 'redirectUrl', 'allowResubmit', 'limitOneResponse', 'isQuizMode', 'maxResponses', 'deadline'];
+    const settingProps = ['logoBase64', 'coverImageBase64', 'themeColor', 'backgroundStyle', 'darkModeEnabled', 'thankYouMessage', 'redirectUrl', 'allowResubmit', 'limitOneResponse', 'isQuizMode', 'maxResponses', 'deadline', 'enableTicketing'];
     settingProps.forEach(p => {
       if (form[p] !== undefined) form.settings[p] = form[p];
     });
@@ -465,6 +465,7 @@ openFormSettings() {
     document.getElementById('setting-allow-resubmit').checked = form.allowResubmit !== false;
     document.getElementById('setting-max-responses').value = form.maxResponses || '';
     document.getElementById('setting-deadline').value = form.deadline || '';
+    document.getElementById('setting-enable-ticketing').checked = form.enableTicketing || false;
     
     const logoPreview = document.getElementById('setting-logo-preview');
     if(form.logoBase64) {
