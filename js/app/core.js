@@ -317,39 +317,39 @@ window.App = {
         resultText.innerText = 'الرجاء الانتظار قليلاً';
 
         try {
-          const { data, error } = await supabaseClient.from('responses').select('data').eq('id', decodedText).eq('form_id', formId).single();
+          const { data, error } = await supabaseClient.rpc('verify_and_checkin_ticket', {
+            p_ticket_id: decodedText,
+            p_form_id: formId
+          });
           
-          if(error || !data) {
-            throw new Error('التذكرة غير صحيحة أو لا تنتمي لهذه الفعالية');
-          }
-
-          if(data.data._checked_in) {
-            resultBox.style.background = 'rgba(239, 68, 68, 0.1)';
-            resultTitle.style.color = 'var(--danger)';
-            resultTitle.innerText = 'عفواً، التذكرة مستخدمة مسبقاً ❌';
-            const checkInTime = new Date(data.data._checked_in_at).toLocaleTimeString('ar-EG');
-            resultText.innerText = `تم تسجيل حضور هذه التذكرة مسبقاً الساعة ${checkInTime}`;
-          } else {
-            // Update to checked in
-            data.data._checked_in = true;
-            data.data._checked_in_at = new Date().toISOString();
-            
-            const { error: updateError } = await supabaseClient.from('responses').update({ data: data.data }).eq('id', decodedText);
-            if(updateError) throw updateError;
-
-            // Extract Name for greeting
-            let guestName = 'زائر';
-            for (let key in data.data) {
-              if (key.includes('الاسم') || key.toLowerCase().includes('name')) {
-                guestName = data.data[key]; break;
-              }
+          if(error) {
+            if (error.message.includes('invalid_ticket')) {
+              throw new Error('التذكرة غير صحيحة أو لا تنتمي لهذه الفعالية');
+            } else if (error.message.includes('already_used')) {
+              const checkInTime = new Date(error.message.split('|')[1]).toLocaleTimeString('ar-EG');
+              resultBox.style.background = 'rgba(239, 68, 68, 0.1)';
+              resultTitle.style.color = 'var(--danger)';
+              resultTitle.innerText = 'عفواً، التذكرة مستخدمة مسبقاً ❌';
+              resultText.innerText = `تم تسجيل حضور هذه التذكرة مسبقاً الساعة ${checkInTime}`;
+              return;
+            } else {
+              throw new Error('حدث خطأ أثناء التحقق: ' + error.message);
             }
-
-            resultBox.style.background = 'rgba(16, 185, 129, 0.1)';
-            resultTitle.style.color = '#10B981';
-            resultTitle.innerText = 'تم تسجيل الحضور بنجاح ✅';
-            resultText.innerText = `أهلاً بك: ${guestName}`;
           }
+
+          // Success - Extract Name for greeting
+          let guestName = 'زائر';
+          for (let key in data) {
+            if (key.includes('الاسم') || key.toLowerCase().includes('name')) {
+              guestName = data[key]; break;
+            }
+          }
+
+          resultBox.style.background = 'rgba(16, 185, 129, 0.1)';
+          resultTitle.style.color = '#10B981';
+          resultTitle.innerText = 'تم تسجيل الحضور بنجاح ✅';
+          resultText.innerText = `أهلاً بك: ${guestName}`;
+
         } catch(err) {
           resultBox.style.background = 'rgba(239, 68, 68, 0.1)';
           resultTitle.style.color = 'var(--danger)';
