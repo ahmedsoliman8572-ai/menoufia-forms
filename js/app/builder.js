@@ -100,7 +100,7 @@ Object.assign(window.App, {
 
     if(form.fields.length === 0) {
       html += `<div style="text-align:center; padding: 48px 24px; color:var(--text-tertiary); font-size:1.1rem; border:2px dashed var(--border); border-radius:var(--radius-lg); background: var(--bg-glass);">
-        <div style="font-size:3rem; margin-bottom:12px; opacity:0.5;">📝</div>
+        <div style="font-size:3rem; margin-bottom:12px; opacity:0.5;"></div>
         اضغط على أي حقل من القائمة الجانبية لإضافته هنا
       </div>`;
     }
@@ -143,13 +143,13 @@ Object.assign(window.App, {
       return `<div class="fake-input" style="height:70px">${this.escape(field.placeholder || 'إجابة طويلة...')}</div>`;
     }
     if(type === 'date' || type === 'time') {
-      return `<div class="fake-input" style="display:flex; justify-content:space-between;"><span>${type === 'date' ? 'يوم / شهر / سنة' : '-- : --'}</span><span>${type === 'date' ? '📅' : '⏰'}</span></div>`;
+      return `<div class="fake-input" style="display:flex; justify-content:space-between;"><span>${type === 'date' ? 'يوم / شهر / سنة' : '-- : --'}</span><span>${type === 'date' ? '' : ''}</span></div>`;
     }
     if(type === 'file_upload') {
-      return `<div class="fake-input" style="border: 2px dashed var(--border); text-align:center; padding: 15px;">📎 اضغط لرفع ملف</div>`;
+      return `<div class="fake-input" style="border: 2px dashed var(--border); text-align:center; padding: 15px;">اضغط لرفع ملف</div>`;
     }
     if(type === 'rating') {
-      return `<div style="font-size: 2rem; color: #ccc;">⭐ ⭐ ⭐ ⭐ ⭐</div>`;
+      return `<div style="font-size: 2rem; color: #ccc;"></div>`;
     }
     if(type === 'linear_scale') {
       return `<div style="display:flex; justify-content:space-between; max-width: 300px;">
@@ -188,7 +188,7 @@ Object.assign(window.App, {
 
     let html = `
       <div class="settings-header">
-        <h3>⚙️ إعدادات الحقل</h3>
+        <h3>إعدادات الحقل</h3>
         <button class="icon-btn" style="width:30px;height:30px" onclick="App.closeSettings()">✕</button>
       </div>
       <div class="settings-body">
@@ -244,7 +244,7 @@ Object.assign(window.App, {
 
         ${form.isQuizMode && (field.type === 'single_choice' || field.type === 'dropdown' || field.type === 'multiple_choice') ? `
           <div class="form-group" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);">
-            <label style="font-weight:600; color:#10B981;">🎓 إعدادات الاختبار</label>
+            <label style="font-weight:600; color:#10B981;">إعدادات الاختبار</label>
             <div style="margin-top:8px;">
               <label style="font-size:0.9rem;">الإجابة الصحيحة:</label>
               <select class="form-control" onchange="App.updateFieldProp('${field.id}', 'correctAnswer', this.value)">
@@ -314,7 +314,7 @@ Object.assign(window.App, {
     form.fields.splice(index + 1, 0, clone);
     this.save();
     this.renderCanvas();
-    this.showToast('تم نسخ الحقل بنجاح 📋', 'success');
+    this.showToast('تم نسخ الحقل بنجاح ', 'success');
   },
 
   exportCurrentForm() {
@@ -344,7 +344,7 @@ Object.assign(window.App, {
         this.renderDashboard();
         this.showToast('تم استيراد النموذج بنجاح 📥', 'success');
       } catch (err) {
-        this.showToast('خطأ في قراءة ملف النموذج ❌', 'error');
+        this.showToast('خطأ في قراءة ملف النموذج ', 'error');
       }
       event.target.value = '';
     };
@@ -371,7 +371,7 @@ Object.assign(window.App, {
       }).eq('id', form.id);
       
       if(error) throw error;
-      this.showToast('تم حفظ النموذج بنجاح ✅', 'success'); 
+      this.showToast('تم حفظ النموذج بنجاح ', 'success'); 
     } catch(err) {
       console.error(err);
       this.showToast('حدث خطأ أثناء الحفظ', 'error');
@@ -480,7 +480,7 @@ openFormSettings() {
     
     // Show loading state
     const logoPreview = document.getElementById('setting-logo-preview');
-    logoPreview.innerHTML = `<span style="color:var(--text-tertiary);">⏳ جاري الرفع...</span>`;
+    logoPreview.innerHTML = `<span style="color:var(--text-tertiary);">جاري الرفع...</span>`;
     logoPreview.style.display = 'block';
 
     const publicUrl = await App.uploadFile(file, `logo_${this.getForm().id}`);
@@ -504,7 +504,7 @@ openFormSettings() {
     // Show loading state
     const coverPreview = document.getElementById('setting-cover-preview');
     coverPreview.style.backgroundImage = 'none';
-    coverPreview.innerHTML = `<span style="color:var(--text-tertiary); display:flex; align-items:center; justify-content:center; height:100%;">⏳ جاري الرفع...</span>`;
+    coverPreview.innerHTML = `<span style="color:var(--text-tertiary); display:flex; align-items:center; justify-content:center; height:100%;">جاري الرفع...</span>`;
     coverPreview.style.display = 'block';
 
     const publicUrl = await App.uploadFile(file, `cover_${this.getForm().id}`);
