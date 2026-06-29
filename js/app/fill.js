@@ -1049,7 +1049,7 @@ Object.assign(window.App, {
       }
 
       // Show confetti effect
-      this.showConfetti();
+      // this.showConfetti();
 
       document.querySelector('.fill-body').innerHTML = `
         <div style="text-align:center; padding: 60px 20px;">
