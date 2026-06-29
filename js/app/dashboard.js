@@ -67,6 +67,7 @@ Object.assign(window.App, {
             <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>
             <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">📊</button>
             <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">👁️</button>
+            ${form.enableTicketing ? `<button onclick="event.stopPropagation(); App.copyScannerLink('${form.id}')" title="نسخ رابط المنظمين (الماسح)" style="background:var(--primary-light); color:white;">📷</button>` : ''}
           </div>
           <div class="form-card-banner">📝</div>
           <div class="form-card-body">
@@ -140,12 +141,23 @@ Object.assign(window.App, {
         
         this.state.forms = this.state.forms.filter(f => f.id !== id);
         this.renderDashboard();
-        this.showToast('تم حذف النموذج بنجاح ️', 'success');
+        this.renderLandingStats();
+        this.showToast('تم الحذف بنجاح', 'success');
       } catch(err) {
         console.error(err);
         this.showToast('حدث خطأ أثناء الحذف', 'error');
       }
     }
+  },
+
+  copyScannerLink(formId) {
+    const link = window.location.origin + window.location.pathname + '?scanner=' + formId;
+    navigator.clipboard.writeText(link).then(() => {
+      this.showToast('تم نسخ رابط المنظمين (الماسح) بنجاح!', 'success');
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      this.showToast('فشل النسخ، انسخ الرابط يدوياً: ' + link, 'error');
+    });
   },
 
   async deleteCurrentForm() {
