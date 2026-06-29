@@ -46,7 +46,7 @@
     <div class="container">
       <div class="nav-brand" onclick="App.navigate('dashboard')" onkeydown="if(event.key==='Enter')App.navigate('dashboard')" role="button" tabindex="0" aria-label="الصفحة الرئيسية" dir="ltr" style="font-family: var(--font-en); font-weight: 800; letter-spacing: -0.5px;">
         
-        <span>Menoufia Forms</span>
+        <span class="nav-brand-icon" style="margin-right: 10px;">📋</span><span class="nav-brand-icon" style="margin-right: 10px;">📋</span><span>Menoufia Forms</span>
       </div>
 
       <div class="nav-actions">
@@ -54,10 +54,10 @@
         <button class="btn btn-primary" onclick="App.showLoginModal()" id="nav-login-btn" style="padding: 6px 12px; font-size: 0.9rem;">تسجيل الدخول</button>
         <div id="nav-user-info" style="display: none; align-items: center; gap: 8px;">
           <span id="nav-user-email" style="font-size: 0.9rem; font-weight: 600; direction: ltr;"></span>
-          <button class="icon-btn" id="nav-admin-panel-btn" onclick="App.navigate('admin')" title="لوحة الإدارة (سوبر أدمن)" style="display:none; font-size: 1.2rem;">إدارة</button>
-          <button class="icon-btn" onclick="App.logout()" title="تسجيل الخروج" aria-label="تسجيل الخروج">خروج</button>
+          <button class="icon-btn" id="nav-admin-panel-btn" onclick="App.navigate('admin')" title="لوحة الإدارة (سوبر أدمن)" style="display:none;">👑</button>
+          <button class="icon-btn" onclick="App.logout()" title="تسجيل الخروج" aria-label="تسجيل الخروج">🚪</button>
         </div>
-        <button class="icon-btn" id="theme-toggle" onclick="App.toggleTheme()" title="تبديل السمة" aria-label="تبديل الوضع الداكن/الفاتح">السمة</button>
+        <button class="icon-btn" id="theme-toggle" onclick="App.toggleTheme()" title="تبديل السمة" aria-label="تبديل الوضع الداكن/الفاتح">🌙</button>
       </div>
     </div>
   </nav>
@@ -106,7 +106,7 @@
   <main id="page-contacts" class="page" style="padding-top: var(--nav-height); background:var(--bg);" role="main">
     <div class="builder-toolbar" style="border-bottom: 1px solid var(--border); background: var(--bg-card); padding: 10px 20px;">
       <div style="display:flex; align-items:center; gap:8px;">
-        <button class="icon-btn" onclick="App.navigate('dashboard')" title="العودة للرئيسية">رجوع</button>
+        <button class="icon-btn" onclick="App.navigate('dashboard')" title="العودة للرئيسية">🏠</button>
         <h2 style="margin:0; font-size:1.2rem;"> جهات الاتصال (CRM)</h2>
       </div>
       <div style="display:flex; gap:8px;">
@@ -140,7 +140,7 @@
   <main id="page-insights" class="page" style="padding-top: var(--nav-height); background:var(--bg);" role="main">
     <div class="builder-toolbar" style="border-bottom: 1px solid var(--border); background: var(--bg-card); padding: 10px 20px;">
       <div style="display:flex; align-items:center; gap:8px;">
-        <button class="icon-btn" onclick="App.navigate('dashboard')" title="العودة للرئيسية">رجوع</button>
+        <button class="icon-btn" onclick="App.navigate('dashboard')" title="العودة للرئيسية">🏠</button>
         <h2 style="margin:0; font-size:1.2rem;"> رؤى النظام الشاملة</h2>
       </div>
     </div>
@@ -228,19 +228,19 @@
   <main id="page-builder" class="page" style="padding-top: var(--nav-height); height: 100dvh;" role="main">
     <div class="builder-toolbar">
       <div style="display:flex; align-items:center; gap:8px;">
-        <button class="icon-btn" onclick="App.navigate('dashboard')" title="رجوع" aria-label="العودة للوحة التحكم" id="btn-back-dashboard">رجوع</button>
+        <button class="icon-btn" onclick="App.navigate('dashboard')" title="رجوع" aria-label="العودة للوحة التحكم" id="btn-back-dashboard">🏠</button>
         <input type="text" class="form-title-input" id="builder-form-title" placeholder="عنوان النموذج" oninput="App.updateFormTitle(this.value)" aria-label="عنوان النموذج">
       </div>
       <div class="builder-toolbar-right" style="display:flex; gap:8px; align-items:center;">
-        <button class="btn btn-ghost" onclick="App.undo()" title="تراجع (Ctrl+Z)">تراجع</button>
-        <button class="btn btn-ghost" onclick="App.redo()" title="إعادة (Ctrl+Y)">إعادة</button>
-        <button class="btn btn-ghost" onclick="App.openShareModal()" id="btn-share" title="مشاركة" aria-label="مشاركة النموذج"> <span class="hide-mobile">مشاركة</span></button>
-        <button class="btn btn-ghost" onclick="App.openFormSettings()" id="btn-settings" title="إعدادات النموذج" aria-label="إعدادات النموذج">️ <span class="hide-mobile">إعدادات النموذج</span></button>
-        <button class="btn btn-ghost" onclick="App.viewResponses()" id="btn-responses" title="الردود" aria-label="عرض الردود"> <span class="hide-mobile">الردود</span></button>
+        <button class="btn btn-ghost" onclick="App.undo()" title="تراجع (Ctrl+Z)">↶</button>
+        <button class="btn btn-ghost" onclick="App.redo()" title="إعادة (Ctrl+Y)">↷</button>
+        <button class="btn btn-ghost" onclick="App.openShareModal()" id="btn-share" title="مشاركة" aria-label="مشاركة النموذج"> مشاركة</button>
+        <button class="btn btn-ghost" onclick="App.openFormSettings()" id="btn-settings" title="إعدادات النموذج" aria-label="إعدادات النموذج">️ إعدادات النموذج</button>
+        <button class="btn btn-ghost" onclick="App.viewResponses()" id="btn-responses" title="الردود" aria-label="عرض الردود"> الردود</button>
 
-        <button class="btn btn-ghost" onclick="App.previewForm()" id="btn-preview" title="معاينة" aria-label="معاينة النموذج">️ <span class="hide-mobile">معاينة</span></button>
-        <button class="btn btn-primary" onclick="App.saveCurrentForm()" id="btn-save" title="حفظ" aria-label="حفظ النموذج"> <span class="hide-mobile">حفظ</span></button>
-        <button class="btn btn-danger" onclick="App.deleteCurrentForm()" id="btn-delete-form" title="حذف النموذج" aria-label="حذف النموذج">️ <span class="hide-mobile">حذف</span></button>
+        <button class="btn btn-ghost" onclick="App.previewForm()" id="btn-preview" title="معاينة" aria-label="معاينة النموذج">️ معاينة</button>
+        <button class="btn btn-primary" onclick="App.saveCurrentForm()" id="btn-save" title="حفظ" aria-label="حفظ النموذج"> حفظ</button>
+        <button class="btn btn-danger" onclick="App.deleteCurrentForm()" id="btn-delete-form" title="حذف النموذج" aria-label="حذف النموذج">️ حذف</button>
       </div>
     </div>
 
@@ -254,7 +254,7 @@
       <aside class="builder-settings" id="builder-settings" aria-label="إعدادات الحقل"></aside>
 
       <!-- Mobile Floating Action Button (FAB) -->
-      <button class="mobile-fab" id="mobile-fab" onclick="App.toggleMobileSidebar()" aria-label="إضافة حقل">إضافة</button>
+      <button class="mobile-fab" id="mobile-fab" onclick="App.toggleMobileSidebar()" aria-label="إضافة حقل">➕</button>
       
       <!-- Drawer Overlay -->
       <div class="drawer-overlay" id="drawer-overlay" onclick="App.closeAllDrawers()"></div>
@@ -280,7 +280,7 @@
   <main id="page-responses" class="page" style="padding-top: var(--nav-height); background:var(--bg);" role="main">
     <div class="builder-toolbar" style="border-bottom: 1px solid var(--border); background: var(--bg-card); padding: 10px 20px;">
       <div style="display:flex; align-items:center; gap:8px;">
-        <button class="icon-btn" onclick="App.navigate('builder', {formId: App.state.currentFormId})" title="العودة للنموذج">رجوع</button>
+        <button class="icon-btn" onclick="App.navigate('builder', {formId: App.state.currentFormId})" title="العودة للنموذج">🏠</button>
         <h2 style="margin:0; font-size:1.2rem;"> لوحة الردود والتحليلات</h2>
       </div>
       <div style="display:flex; gap:8px;">
