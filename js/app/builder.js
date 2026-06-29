@@ -237,9 +237,26 @@ Object.assign(window.App, {
               <option value="${f.id}" ${field.conditionField === f.id ? 'selected' : ''}>${this.escape(f.label)}</option>
             `).join('')}
           </select>
-          ${field.conditionField ? `
-            <input type="text" class="form-control" placeholder="يساوي القيمة..." value="${this.escape(field.conditionValue || '')}" oninput="App.updateFieldProp('${field.id}', 'conditionValue', this.value)" style="margin-top:8px;">
-          ` : ''}
+          ${field.conditionField ? (() => {
+            const cField = form.fields.find(f => f.id === field.conditionField);
+            if (cField) {
+              let opts = cField.options || [];
+              const def = FIELD_TYPES[cField.originalType || cField.type];
+              if (!opts.length && def && def.options) opts = def.options;
+              if (cField.originalType === 'gender') opts = ['ذكر', 'أنثى'];
+              if (cField.originalType === 'union_member') opts = ['نعم', 'لا'];
+              
+              if (opts.length > 0) {
+                return `
+                  <select class="form-control" onchange="App.updateFieldProp('${field.id}', 'conditionValue', this.value)" style="margin-top:8px;">
+                    <option value="">-- اختر القيمة --</option>
+                    ${opts.map(o => `<option value="${this.escape(o)}" ${field.conditionValue === o ? 'selected' : ''}>${this.escape(o)}</option>`).join('')}
+                  </select>
+                `;
+              }
+            }
+            return `<input type="text" class="form-control" placeholder="يساوي القيمة..." value="${this.escape(field.conditionValue || '')}" oninput="App.updateFieldProp('${field.id}', 'conditionValue', this.value)" style="margin-top:8px;">`;
+          })() : ''}
         </div>
 
         ${form.isQuizMode && (field.type === 'single_choice' || field.type === 'dropdown' || field.type === 'multiple_choice') ? `
