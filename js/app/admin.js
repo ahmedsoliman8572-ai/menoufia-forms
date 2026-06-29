@@ -26,6 +26,62 @@ Object.assign(window.App, {
       console.error("Error loading global stats", e);
     }
 
+    // Render Permissions Manager UI if Owner
+    const permissionsContainer = document.getElementById('admin-permissions-container');
+    if (permissionsContainer) {
+      if (this.state.userRole === 'owner') {
+        permissionsContainer.innerHTML = `
+          <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; margin-top:20px;">
+            <h3 style="margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">إدارة الصلاحيات (للمالك فقط)</h3>
+            
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+              <!-- Admin Permissions -->
+              <div style="flex:1; min-width:250px; background:var(--bg-secondary); padding:15px; border-radius:8px;">
+                <h4>صلاحيات الأدمن (Admin)</h4>
+                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <span>إنشاء النماذج</span>
+                  <input type="checkbox" ${App.state.rolePermissions.admin.create ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'create', this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <span>تعديل النماذج</span>
+                  <input type="checkbox" ${App.state.rolePermissions.admin.edit ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'edit', this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <span>حذف النماذج</span>
+                  <input type="checkbox" ${App.state.rolePermissions.admin.delete ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'delete', this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <!-- Super Admin Permissions -->
+              <div style="flex:1; min-width:250px; background:var(--bg-secondary); padding:15px; border-radius:8px;">
+                <h4>صلاحيات السوبر أدمن (Super Admin)</h4>
+                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <span>إنشاء النماذج</span>
+                  <input type="checkbox" ${App.state.rolePermissions.super_admin.create ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'create', this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <span>تعديل النماذج</span>
+                  <input type="checkbox" ${App.state.rolePermissions.super_admin.edit ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'edit', this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <span>حذف النماذج</span>
+                  <input type="checkbox" ${App.state.rolePermissions.super_admin.delete ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'delete', this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        permissionsContainer.innerHTML = '';
+      }
+    }
+
     this.loadCreators();
   },
 
@@ -52,21 +108,29 @@ Object.assign(window.App, {
         <tr>
           <td style="padding:10px; border:1px solid var(--border); direction:ltr; text-align:right;">${this.escape(creator.email)}</td>
           <td style="padding:10px; border:1px solid var(--border);">
-            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'super_admin' ? 'var(--primary)' : creator.role === 'pending' ? 'var(--warning)' : 'var(--bg-secondary)'}; color: ${creator.role === 'super_admin' || creator.role === 'pending' ? '#fff' : 'var(--text)'};">
-              ${creator.role === 'super_admin' ? 'مدير عام 👑' : creator.role === 'pending' ? 'في الانتظار ⏳' : 'مدير عادي'}
+            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'owner' ? '#8b5cf6' : creator.role === 'super_admin' ? 'var(--primary)' : creator.role === 'pending' ? 'var(--warning)' : 'var(--bg-secondary)'}; color: ${creator.role === 'owner' || creator.role === 'super_admin' || creator.role === 'pending' ? '#fff' : 'var(--text)'};">
+              ${creator.role === 'owner' ? 'المالك' : creator.role === 'super_admin' ? 'مدير عام' : creator.role === 'pending' ? 'في الانتظار' : 'مدير عادي'}
             </span>
           </td>
           <td style="padding:10px; border:1px solid var(--border); text-align:center;">
             <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
-            ${creator.email === this.state.currentUser.email 
-              ? `<span style="color:var(--text-tertiary); font-size:0.8rem;">(أنت)</span>` 
+            ${creator.email === App.state.currentUser.email 
+              ? (creator.role === 'super_admin' && !data.some(c => c.role === 'owner')
+                  ? `<button class="btn btn-primary btn-sm" style="background:#8b5cf6; padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'owner')">ترقية لنفسي لمالك</button>`
+                  : `<span style="color:var(--text-tertiary); font-size:0.8rem;">(أنت)</span>`) 
               : creator.role === 'pending'
-                ? `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.approveCreator('${creator.email}')">✅ قبول</button>
-                   <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}', true)">❌ رفض</button>`
-                : creator.role === 'admin' || creator.role === 'editor'
-                  ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}')">👑 ترقية</button>
-                     <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">🗑️ حذف</button>`
-                  : `<button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">🗑️ حذف</button>`}
+                ? `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.approveCreator('${creator.email}')">قبول</button>
+                   <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}', true)">رفض</button>`
+                : App.state.userRole === 'owner' && creator.role !== 'owner'
+                  ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'super_admin')">سوبر أدمن</button>
+                     <button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'admin')">أدمن</button>
+                     <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">حذف</button>`
+                  : creator.role === 'admin' && App.state.userRole === 'super_admin'
+                    ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'super_admin')">ترقية</button>
+                       <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">حذف</button>`
+                    : creator.role === 'super_admin' || creator.role === 'owner'
+                      ? `<span style="color:var(--text-tertiary); font-size:0.8rem;">لا يمكن التعديل</span>`
+                      : `<button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">حذف</button>`}
             </div>
           </td>
         </tr>
@@ -109,7 +173,7 @@ Object.assign(window.App, {
       this.showToast(e.message || 'حدث خطأ أثناء الإضافة. تأكد من الصلاحيات.', 'error');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '➕ إضافة';
+      btn.innerHTML = 'إضافة';
     }
   },
 
@@ -155,21 +219,63 @@ Object.assign(window.App, {
     }
   },
 
-  async promoteCreator(email) {
-    const isConfirmed = await App.confirm(`هل أنت متأكد من ترقية (${email}) إلى مدير عام (سوبر أدمن)؟`);
+  async promoteCreator(email, newRole) {
+    const roleName = newRole === 'owner' ? 'مالك (Owner)' : newRole === 'super_admin' ? 'مدير عام (Super Admin)' : 'مدير عادي (Admin)';
+    const isConfirmed = await App.confirm(`هل أنت متأكد من تغيير رتبة (${email}) إلى ${roleName}؟`);
     if(!isConfirmed) return;
     try {
       const { error } = await supabaseClient
         .from('allowed_creators')
-        .update({ role: 'super_admin' })
+        .update({ role: newRole })
         .eq('email', email);
 
       if(error) throw error;
-      this.showToast('تمت ترقية المشرف إلى مدير عام بنجاح 👑', 'success');
+      if (newRole === 'owner' && email === App.state.currentUser.email) {
+        App.state.userRole = 'owner';
+      }
+      this.showToast(`تم تغيير الرتبة إلى ${roleName} بنجاح`, 'success');
       this.loadCreators();
+      
+      // Re-render role permissions UI if current user just became owner
+      if (newRole === 'owner' && email === App.state.currentUser.email) {
+        this.renderAdmin();
+      }
+      
     } catch(e) {
       console.error(e);
-      this.showToast('حدث خطأ أثناء الترقية', 'error');
+      this.showToast('حدث خطأ أثناء تغيير الرتبة', 'error');
+    }
+  },
+
+  async updateRolePermission(role, action, value) {
+    this.state.rolePermissions[role][action] = value;
+    
+    // Save to forms table as settings
+    try {
+      const { data } = await supabaseClient.from('forms').select('id').eq('id', 'role_permissions').single();
+      if (data) {
+        await supabaseClient.from('forms').update({
+          settings: { rolePermissions: this.state.rolePermissions }
+        }).eq('id', 'role_permissions');
+      } else {
+        await supabaseClient.from('forms').insert([{
+          id: 'role_permissions',
+          title: 'Role Permissions Configuration',
+          description: 'System role permissions configuration',
+          fields: [],
+          settings: { rolePermissions: this.state.rolePermissions },
+          user_id: this.state.currentUser.id
+        }]);
+      }
+      this.showToast('تم تحديث الصلاحيات بنجاح', 'success');
+      
+      // Reflect for UI buttons currently visible
+      if (document.getElementById('btn-new-form')) {
+        document.getElementById('btn-new-form').style.display = App.hasPermission('create') ? 'inline-flex' : 'none';
+      }
+    } catch(e) {
+      console.error(e);
+      this.showToast('حدث خطأ أثناء حفظ الصلاحيات', 'error');
     }
   }
 });
