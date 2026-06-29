@@ -63,7 +63,10 @@ Object.assign(window.App, {
               : creator.role === 'pending'
                 ? `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.approveCreator('${creator.email}')">✅ قبول</button>
                    <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}', true)">❌ رفض</button>`
-                : `<button class="btn btn-danger btn-sm" onclick="App.deleteCreator('${creator.email}')">🗑️ حذف</button>`}
+                : creator.role === 'admin' || creator.role === 'editor'
+                  ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}')">👑 ترقية</button>
+                     <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">🗑️ حذف</button>`
+                  : `<button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">🗑️ حذف</button>`}
             </div>
           </td>
         </tr>
@@ -143,13 +146,30 @@ Object.assign(window.App, {
         .update({ role: 'admin' })
         .eq('email', email);
 
-      if (error) throw error;
-      
+      if(error) throw error;
       this.showToast('تم قبول المشرف بنجاح', 'success');
       this.loadCreators();
     } catch(e) {
       console.error(e);
       this.showToast('حدث خطأ أثناء القبول', 'error');
+    }
+  },
+
+  async promoteCreator(email) {
+    const isConfirmed = await App.confirm(`هل أنت متأكد من ترقية (${email}) إلى مدير عام (سوبر أدمن)؟`);
+    if(!isConfirmed) return;
+    try {
+      const { error } = await supabaseClient
+        .from('allowed_creators')
+        .update({ role: 'super_admin' })
+        .eq('email', email);
+
+      if(error) throw error;
+      this.showToast('تمت ترقية المشرف إلى مدير عام بنجاح 👑', 'success');
+      this.loadCreators();
+    } catch(e) {
+      console.error(e);
+      this.showToast('حدث خطأ أثناء الترقية', 'error');
     }
   }
 });
