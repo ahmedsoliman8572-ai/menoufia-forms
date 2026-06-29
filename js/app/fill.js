@@ -986,8 +986,9 @@ Object.assign(window.App, {
       // --------------------------------------------
 
       try {
-        const { error } = await supabaseClient.from('responses').insert([payload]);
+        const { data: insertedData, error } = await supabaseClient.from('responses').insert([payload]).select();
         if(error) throw error;
+        const responseId = insertedData && insertedData.length > 0 ? insertedData[0].id : null;
 
         // --- CRM Data Extraction ---
         let contactName = '';
@@ -1051,18 +1052,43 @@ Object.assign(window.App, {
       // Show confetti effect
       // this.showConfetti();
 
+      let qrHtml = '';
+      if(form.enableTicketing && responseId) {
+        qrHtml = `
+          <div style="margin: 20px auto; padding: 20px; background: white; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <h4 style="margin-top:0; margin-bottom:15px; color:#111;">تذكرتك (QR Code)</h4>
+            <div id="ticket-qr-code"></div>
+            <p style="font-size:0.85rem; color:#666; margin-top:10px; margin-bottom:0;">يرجى الاحتفاظ بصورة لهذه التذكرة لإظهارها للمنظمين</p>
+          </div>
+        `;
+      }
+
       document.querySelector('.fill-body').innerHTML = `
         <div style="text-align:center; padding: 60px 20px;">
           <div class="success-checkmark">✓</div>
           <h2 style="font-size:1.8rem; font-weight:900; background:var(--primary-gradient-vivid); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px;">تم الإرسال بنجاح!</h2>
           <p style="color:var(--text-secondary); font-size:1.05rem; margin-bottom:36px; line-height:1.8;">${this.escape(form.thankYouMessage || 'شكراً لك، تم تسجيل ردك في قاعدة البيانات بنجاح.')}</p>
           ${quizHtml}
+          ${qrHtml}
           <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
             ${(!form.limitOneResponse && form.allowResubmit !== false) ? `<button class="btn btn-primary" onclick="App.renderFillForm()">إرسال رد آخر</button>` : ''}
           </div>
           ${redirectHtml}
         </div>
       `;
+
+      if(form.enableTicketing && responseId) {
+        setTimeout(() => {
+          new QRCode(document.getElementById("ticket-qr-code"), {
+            text: responseId,
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+          });
+        }, 100);
+      }
       const progressBar = document.getElementById('fill-progress');
       if(progressBar) {
         progressBar.style.width = '100%';
