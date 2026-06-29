@@ -57,7 +57,19 @@ Object.assign(window.App, {
 
     // Check limits
     const now = new Date();
-    const submissionsCount = form.submissions ? form.submissions.length : 0;
+    let submissionsCount = 0;
+    if (form.maxResponses && !this.state.isPreviewMode) {
+      try {
+        const { data, error } = await supabaseClient.rpc('get_form_responses_count', {
+          p_form_id: form.id
+        });
+        if (!error && data !== null) {
+          submissionsCount = data;
+        }
+      } catch (e) {
+        console.error("Error fetching count", e);
+      }
+    }
     
     let isClosed = false;
     let closedReason = '';
@@ -70,7 +82,7 @@ Object.assign(window.App, {
       closedReason = 'لقد انتهى الوقت المخصص لاستقبال الردود على هذا النموذج.';
     } else if(form.maxResponses && submissionsCount >= form.maxResponses) {
       isClosed = true;
-      closedReason = 'لقد استكفى هذا النموذج بالعدد المطلوب من الردود.';
+      closedReason = 'عفواً، لقد استكفى هذا النموذج بالعدد المطلوب من الردود ولا يمكن استقبال المزيد.';
     }
 
 
@@ -1055,14 +1067,23 @@ Object.assign(window.App, {
 
       let qrHtml = '';
       if(form.enableTicketing && responseId) {
+        const ticketColor = form.ticketColor || form.themeColor || '#4f46e5';
+        const logoHtml = (form.showTicketLogo && form.logoBase64) ? `<img src="${form.logoBase64}" style="max-height: 60px; margin-bottom: 15px; border-radius: 8px;">` : '';
+
         qrHtml = `
-          <div style="margin: 30px auto; max-width: 320px; padding: 25px 20px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; border: 1px solid #f3f4f6; display: flex; flex-direction: column; align-items: center;">
-            <h4 style="margin: 0 0 20px 0; color: #111827; font-size: 1.2rem; font-weight: 700;">تذكرتك (QR Code)</h4>
-            <div id="ticket-qr-code" style="display: inline-flex; justify-content: center; align-items: center; background: white; padding: 15px; border-radius: 12px; border: 2px dashed #e5e7eb; min-width: 200px; min-height: 200px;"></div>
-            <p style="margin: 20px 0 15px 0; font-size: 0.9rem; color: #6b7280; line-height: 1.5;">يرجى الاحتفاظ بصورة لهذه التذكرة أو تحميلها لإظهارها للمنظمين عند الدخول.</p>
-            <button type="button" onclick="App.downloadTicketQR()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 12px rgba(var(--primary-rgb, 79,70,229), 0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-              <span style="font-size:1.1rem;">📥</span> تحميل التذكرة
-            </button>
+          <div style="margin: 30px auto; max-width: 320px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; overflow: hidden; border: 1px solid #f3f4f6; position: relative; direction: rtl;">
+            <div style="background: ${ticketColor}; padding: 25px 20px; color: white;">
+              ${logoHtml}
+              <h4 style="margin: 0; font-size: 1.3rem; font-weight: 800;">تذكرة دخول</h4>
+              <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.9;">${this.escape(form.title)}</p>
+            </div>
+            <div style="padding: 25px 20px;">
+              <div id="ticket-qr-code" style="display: inline-flex; justify-content: center; align-items: center; background: white; padding: 15px; border-radius: 12px; border: 2px dashed #e5e7eb; min-width: 200px; min-height: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);"></div>
+              <p style="margin: 20px 0 15px 0; font-size: 0.9rem; color: #6b7280; line-height: 1.5;">احتفظ بصورة التذكرة لعرضها للمنظمين عند بوابات الدخول.</p>
+              <button type="button" onclick="App.downloadTicketQR()" style="background: ${ticketColor}; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                <span style="font-size:1.1rem;">📥</span> تحميل التذكرة
+              </button>
+            </div>
           </div>
         `;
       }
