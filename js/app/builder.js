@@ -16,6 +16,13 @@ Object.assign(window.App, {
     if(!form) return this.navigate('dashboard');
     
     document.getElementById('builder-form-title').value = form.title;
+    
+    // Toggle scanner button visibility based on enableTicketing
+    const btnScanner = document.getElementById('btn-scanner');
+    if (btnScanner) {
+      btnScanner.style.display = form.enableTicketing ? 'inline-flex' : 'none';
+    }
+
     this.renderSidebar();
     this.renderCanvas();
     this.renderSettings();
@@ -297,7 +304,21 @@ Object.assign(window.App, {
     panel.innerHTML = html;
   },
 
-  updateFormProp(prop, value) { const f = this.getForm(); if(f) { this.saveHistoryState(); f[prop] = value; this.save(); } },
+  updateFormProp(prop, value) { 
+    const f = this.getForm(); 
+    if(f) { 
+      this.saveHistoryState(); 
+      f[prop] = value; 
+      
+      // Update scanner button if ticketing is toggled
+      if (prop === 'enableTicketing') {
+        const btnScanner = document.getElementById('btn-scanner');
+        if (btnScanner) btnScanner.style.display = value ? 'inline-flex' : 'none';
+      }
+
+      this.save(); 
+    } 
+  },
   updateFieldProp(fid, prop, value) { 
     const f = this.getForm(); 
     const field = f.fields.find(x => x.id === fid); 
