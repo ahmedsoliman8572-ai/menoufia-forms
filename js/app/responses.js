@@ -153,21 +153,21 @@ viewResponses(formId) {
       const total = submissions.length;
       const percentage = total > 0 ? Math.round((attendedCount / total) * 100) : 0;
       attendanceSummaryContainer.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
-          <div>
+        <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:space-between; align-items:center; background:var(--bg-card); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
+          <div style="min-width: 200px;">
             <h3 style="margin:0 0 5px 0; font-size:1.1rem;">إحصائيات الحضور</h3>
             <p style="margin:0; color:var(--text-tertiary); font-size:0.9rem;">بناءً على التذاكر التي تم مسحها</p>
           </div>
-          <div style="display:flex; gap:20px; text-align:center;">
-            <div>
+          <div style="display:flex; flex-wrap:wrap; gap:20px; text-align:center; justify-content:center; flex:1;">
+            <div style="min-width: 80px;">
               <div style="font-size:1.8rem; font-weight:bold; color:var(--primary);">${total}</div>
               <div style="font-size:0.8rem; color:var(--text-secondary);">إجمالي المسجلين</div>
             </div>
-            <div>
+            <div style="min-width: 80px;">
               <div style="font-size:1.8rem; font-weight:bold; color:#10B981;">${attendedCount}</div>
               <div style="font-size:0.8rem; color:var(--text-secondary);">عدد الحضور</div>
             </div>
-            <div>
+            <div style="min-width: 80px;">
               <div style="font-size:1.8rem; font-weight:bold; color:#F59E0B;">${percentage}%</div>
               <div style="font-size:0.8rem; color:var(--text-secondary);">نسبة الحضور</div>
             </div>
