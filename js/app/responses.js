@@ -30,7 +30,7 @@ viewResponses(formId) {
     const limit = 50;
     const offset = form.submissions ? form.submissions.length : 0;
     const btn = document.getElementById('btn-load-more-responses');
-    if(btn) { btn.innerText = '⏳ جاري التحميل...'; btn.disabled = true; }
+    if(btn) { btn.innerText = 'جاري التحميل...'; btn.disabled = true; }
     
     try {
       const { data, error } = await supabaseClient.from('responses').select('*').eq('form_id', form.id).order('submitted_at', { ascending: false }).range(offset, offset + limit - 1);
@@ -60,7 +60,7 @@ viewResponses(formId) {
     
     if(!skipFetch) {
       document.getElementById('responses-count-val').innerText = '...';
-      tbody.innerHTML = `<tr><td colspan="10" style="padding:40px; text-align:center; color:var(--primary); font-size:1.2rem;">⏳ جاري جلب الردود من السحابة...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" style="padding:40px; text-align:center; color:var(--primary); font-size:1.2rem;">جاري جلب الردود من السحابة...</td></tr>`;
     }
 
     let submissions = form.submissions || [];
@@ -104,6 +104,9 @@ viewResponses(formId) {
 
     // Build headers
     let thHtml = `<tr style="background:var(--bg-tertiary);"><th style="padding:12px; border:1px solid var(--border);">تاريخ الإرسال</th>`;
+    if (form.enableTicketing) {
+      thHtml += `<th style="padding:12px; border:1px solid var(--border); white-space:nowrap;">حالة الحضور</th>`;
+    }
     form.fields.forEach(f => {
       if(f.type !== 'section_break') {
         thHtml += `<th style="padding:12px; border:1px solid var(--border); white-space:nowrap;">${this.escape(f.label)}</th>`;
@@ -114,12 +117,25 @@ viewResponses(formId) {
 
     // Build rows
     let tbHtml = '';
+    let attendedCount = 0;
     submissions.forEach(sub => {
       const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-';
       tbHtml += `<tr><td style="padding:10px; border:1px solid var(--border); white-space:nowrap;">${dateStr}</td>`;
+      
+      if (form.enableTicketing) {
+        const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
+        if (attended) attendedCount++;
+        const badge = attended 
+          ? `<span style="background:rgba(16, 185, 129, 0.15); color:#10b981; padding:4px 8px; border-radius:12px; font-size:0.85rem; font-weight:bold;">✅ حضر</span>` 
+          : `<span style="background:rgba(100, 116, 139, 0.15); color:#64748b; padding:4px 8px; border-radius:12px; font-size:0.85rem; font-weight:bold;">⏳ لم يحضر</span>`;
+        tbHtml += `<td style="padding:10px; border:1px solid var(--border); text-align:center;">${badge}</td>`;
+      }
+
       form.fields.forEach(f => {
         if(f.type !== 'section_break') {
-          let val = sub.data[f.label] || '-';
+          let val = sub.data[f.label];
+          // skip internal keys
+          if (val === undefined) val = '-';
           if ((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
             tbHtml += `<td style="padding:10px; border:1px solid var(--border); text-align:center;"><a href="${val}" target="_blank" title="عرض الصورة بالحجم الكامل"><img src="${val}" style="max-width:80px; max-height:80px; border-radius:6px; box-shadow:var(--shadow-sm); transition:transform 0.2s;"></a></td>`;
           } else {
@@ -130,6 +146,39 @@ viewResponses(formId) {
       tbHtml += `</tr>`;
     });
     tbody.innerHTML = tbHtml;
+
+    // Attendance Summary Widget
+    const attendanceSummaryContainer = document.getElementById('attendance-summary');
+    if (form.enableTicketing && attendanceSummaryContainer) {
+      const total = submissions.length;
+      const percentage = total > 0 ? Math.round((attendedCount / total) * 100) : 0;
+      attendanceSummaryContainer.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
+          <div>
+            <h3 style="margin:0 0 5px 0; font-size:1.1rem;">إحصائيات الحضور</h3>
+            <p style="margin:0; color:var(--text-tertiary); font-size:0.9rem;">بناءً على التذاكر التي تم مسحها</p>
+          </div>
+          <div style="display:flex; gap:20px; text-align:center;">
+            <div>
+              <div style="font-size:1.8rem; font-weight:bold; color:var(--primary);">${total}</div>
+              <div style="font-size:0.8rem; color:var(--text-secondary);">إجمالي المسجلين</div>
+            </div>
+            <div>
+              <div style="font-size:1.8rem; font-weight:bold; color:#10B981;">${attendedCount}</div>
+              <div style="font-size:0.8rem; color:var(--text-secondary);">عدد الحضور</div>
+            </div>
+            <div>
+              <div style="font-size:1.8rem; font-weight:bold; color:#F59E0B;">${percentage}%</div>
+              <div style="font-size:0.8rem; color:var(--text-secondary);">نسبة الحضور</div>
+            </div>
+          </div>
+        </div>
+      `;
+      attendanceSummaryContainer.style.display = 'block';
+    } else if (attendanceSummaryContainer) {
+      attendanceSummaryContainer.style.display = 'none';
+      attendanceSummaryContainer.innerHTML = '';
+    }
   },
 
   renderCharts(form, submissions) {
@@ -246,8 +295,8 @@ viewResponses(formId) {
 
   exportResponsesExcel() {
     const btn = document.querySelector('#page-responses .builder-toolbar .btn-ghost');
-    const originalText = btn ? btn.innerHTML : '📊 تصدير Excel';
-    if(btn) btn.innerHTML = '⏳ جاري التصدير...';
+    const originalText = btn ? btn.innerHTML : 'تصدير Excel';
+    if(btn) btn.innerHTML = 'جاري التصدير...';
 
     const form = this.getForm();
     if(!form || !form.submissions || form.submissions.length === 0) {
@@ -266,6 +315,9 @@ viewResponses(formId) {
     
     // Headers
     const headers = ['تاريخ الإرسال'];
+    if (form.enableTicketing) {
+      headers.push('حالة الحضور');
+    }
     form.fields.forEach(f => { 
       if(f.type !== 'section_break') headers.push(f.label); 
     });
@@ -274,6 +326,12 @@ viewResponses(formId) {
     // Rows
     form.submissions.forEach(sub => {
       const row = [sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : ''];
+      
+      if (form.enableTicketing) {
+        const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
+        row.push(attended ? 'حضر' : 'لم يحضر');
+      }
+
       form.fields.forEach(f => {
         if(f.type !== 'section_break') {
           let val = sub.data[f.label] || '';
