@@ -7,7 +7,7 @@ Object.assign(window.App, {
     const tbody = document.getElementById('contacts-table-body');
     if (!tbody) return;
     
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">⏳ جاري تحميل جهات الاتصال...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">جاري تحميل جهات الاتصال...</td></tr>';
     
     try {
       const { data, error } = await supabaseClient
@@ -31,6 +31,9 @@ Object.assign(window.App, {
             <td style="padding:12px; border:1px solid var(--border);">${this.escape(contact.email || '-')}</td>
             <td style="padding:12px; border:1px solid var(--border);">${this.escape(contact.phone || '-')}</td>
             <td style="padding:12px; border:1px solid var(--border);">${dateStr}</td>
+            <td style="padding:12px; border:1px solid var(--border); text-align:center;">
+              <button class="btn btn-danger btn-sm" onclick="App.deleteContact('${contact.id}')" title="مسح"></button>
+            </td>
           </tr>
         `;
       });
@@ -45,8 +48,8 @@ Object.assign(window.App, {
 
   exportContactsExcel() {
     const btn = document.querySelector('#page-contacts .builder-toolbar .btn-primary');
-    const originalText = btn ? btn.innerHTML : '📊 تصدير Excel';
-    if(btn) btn.innerHTML = '⏳ جاري التصدير...';
+    const originalText = btn ? btn.innerHTML : 'تصدير Excel';
+    if(btn) btn.innerHTML = 'جاري التصدير...';
     
     this.showToast('سيتم تحميل الملف قريباً...', 'info');
     setTimeout(() => {
@@ -73,8 +76,8 @@ Object.assign(window.App, {
     const contCountEl = document.getElementById('global-contacts-count');
     const chartsContainer = document.getElementById('insights-charts');
     
-    if(resCountEl) resCountEl.innerText = '⏳...';
-    if(contCountEl) contCountEl.innerText = '⏳...';
+    if(resCountEl) resCountEl.innerText = '...';
+    if(contCountEl) contCountEl.innerText = '...';
     if(chartsContainer) chartsContainer.innerHTML = '';
     
     try {
@@ -130,6 +133,38 @@ Object.assign(window.App, {
 
     } catch(e) {
       console.error('Error loading insights:', e);
+    }
+  },
+
+  async deleteContact(id) {
+    const isConfirmed = await App.confirm('هل أنت متأكد من مسح جهة الاتصال هذه؟');
+    if(isConfirmed) {
+      try {
+        const { error } = await supabaseClient.from('contacts').delete().eq('id', id);
+        if(error) throw error;
+        
+        this.showToast('تم مسح جهة الاتصال بنجاح', 'success');
+        this.loadContacts();
+      } catch(err) {
+        console.error(err);
+        this.showToast('حدث خطأ أثناء المسح', 'error');
+      }
+    }
+  },
+
+  async deleteAllContacts() {
+    const isConfirmed = await App.confirm('هل أنت متأكد من مسح جميع جهات الاتصال؟ لا يمكن التراجع عن هذا الإجراء.');
+    if(isConfirmed) {
+      try {
+        const { error } = await supabaseClient.from('contacts').delete().neq('id', '00000000-0000-0000-0000-000000000000'); // delete all
+        if(error) throw error;
+        
+        this.showToast('تم مسح جميع جهات الاتصال بنجاح', 'success');
+        this.loadContacts();
+      } catch(err) {
+        console.error(err);
+        this.showToast('حدث خطأ أثناء مسح جهات الاتصال', 'error');
+      }
     }
   }
 
