@@ -24,7 +24,7 @@ Object.assign(window.App, {
   renderSidebar() {
     const sidebar = document.getElementById('builder-sidebar');
     const categories = {
-      smart: { title: '⚡ حقول ذكية (مصر)', types: ['arabic_name', 'english_name', 'national_id', 'gender', 'governorate', 'markaz', 'faculty', 'academic_year', 'address_detailed', 'tax_id', 'whatsapp', 'union_member'] },
+      smart: { title: '⚡ حقول ذكية (مصر)', types: ['arabic_name', 'english_name', 'national_id', 'gender', 'governorate', 'markaz', 'faculty', 'academic_year', 'address_detailed', 'whatsapp', 'union_member'] },
       basic: { title: '📄 حقول أساسية', types: ['short_text', 'long_text', 'number', 'email', 'phone', 'url', 'date', 'time', 'rating', 'linear_scale', 'file_upload', 'section_break'] },
       choice: { title: '🔘 اختيارات', types: ['single_choice', 'multiple_choice', 'dropdown'] }
     };
