@@ -310,10 +310,13 @@ Object.assign(window.App, {
       this.saveHistoryState(); 
       f[prop] = value; 
       
-      // Update scanner button if ticketing is toggled
+      // Update scanner button and ticket designer if ticketing is toggled
       if (prop === 'enableTicketing') {
         const btnScanner = document.getElementById('btn-scanner');
         if (btnScanner) btnScanner.style.display = value ? 'inline-flex' : 'none';
+        
+        const ticketDesigner = document.getElementById('ticket-designer-settings');
+        if (ticketDesigner) ticketDesigner.style.display = value ? 'block' : 'none';
       }
 
       this.save(); 
@@ -502,6 +505,12 @@ openFormSettings() {
     document.getElementById('setting-max-responses').value = form.maxResponses || '';
     document.getElementById('setting-deadline').value = form.deadline || '';
     document.getElementById('setting-enable-ticketing').checked = form.enableTicketing || false;
+    document.getElementById('setting-ticket-color').value = form.ticketColor || form.themeColor || '#4f46e5';
+    document.getElementById('setting-show-ticket-logo').checked = form.showTicketLogo || false;
+    
+    // Show/hide ticket designer based on ticketing state
+    const ticketDesigner = document.getElementById('ticket-designer-settings');
+    if (ticketDesigner) ticketDesigner.style.display = form.enableTicketing ? 'block' : 'none';
     
     const logoPreview = document.getElementById('setting-logo-preview');
     if(form.logoBase64) {
