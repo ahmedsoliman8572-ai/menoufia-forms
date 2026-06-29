@@ -123,7 +123,7 @@ window.App = {
       if(btnContacts) btnContacts.style.display = 'none';
       if(btnInsights) btnInsights.style.display = 'none';
       this.state.forms = [];
-      if(this.state.currentView !== 'fill') {
+      if(this.state.currentView !== 'fill' && this.state.currentView !== 'scanner') {
         this.navigate('dashboard');
       }
     }
