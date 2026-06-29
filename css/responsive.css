@@ -53,9 +53,7 @@
     position: fixed;
     bottom: 20px;
     left: 20px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
+    width: 56px; height: 56px; border-radius: 50%;
     background: var(--primary);
     color: white;
     align-items: center;
@@ -190,4 +188,14 @@
   .form-card-actions, .field-actions, .toast-container { display: none !important; }
   .page { display: block !important; padding-top: 0; }
   .fill-card { box-shadow: none; border: 1px solid #ccc; }
+}
+
+
+/* Mobile Builder Toolbar Icons */
+.mobile-icon { display: none; }
+@media (max-width: 768px) {
+  .desktop-text { display: none !important; }
+  .mobile-icon { display: inline-block !important; font-size: 1.2rem; }
+  .builder-toolbar-right .btn { padding: 8px !important; min-width: 40px; display: flex !important; justify-content: center; align-items: center; }
+  .builder-toolbar-right { gap: 4px !important; }
 }
