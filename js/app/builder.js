@@ -21,6 +21,21 @@ Object.assign(window.App, {
     this.renderSettings();
   },
 
+  copyCurrentScannerLink() {
+    const form = this.getForm();
+    if(!form) return;
+    if(!form.enableTicketing) {
+      return this.showToast('عفواً، يجب تفعيل "نظام التذاكر" من إعدادات النموذج أولاً.', 'warning');
+    }
+    const link = window.location.origin + window.location.pathname + '?scanner=' + form.id;
+    navigator.clipboard.writeText(link).then(() => {
+      this.showToast('تم نسخ رابط المنظمين (الماسح) بنجاح!', 'success');
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      this.showToast('فشل النسخ، انسخ الرابط يدوياً: ' + link, 'error');
+    });
+  },
+
   renderSidebar() {
     const sidebar = document.getElementById('builder-sidebar');
     const categories = {
