@@ -287,7 +287,7 @@ window.App = {
 
   applyTheme() {
     document.documentElement.setAttribute('data-theme', this.state.settings.theme);
-    document.getElementById('theme-toggle').innerText = this.state.settings.theme === 'dark' ? '' : '';
+    document.getElementById('theme-toggle').innerText = this.state.settings.theme === 'dark' ? '☀️' : '🌙';
   },
 
     toggleMobileMenu() {
