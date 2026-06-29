@@ -38,41 +38,53 @@ Object.assign(window.App, {
               <!-- Admin Permissions -->
               <div style="flex:1; min-width:250px; background:var(--bg-secondary); padding:15px; border-radius:8px;">
                 <h4>صلاحيات الأدمن (Admin)</h4>
-                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
                   <span>إنشاء النماذج</span>
-                  <input type="checkbox" ${App.state.rolePermissions.admin.create ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'create', this.checked)">
-                  <span class="toggle-slider"></span>
-                </label>
-                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <label class="toggle-switch">
+                    <input type="checkbox" ${App.state.rolePermissions.admin.create ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'create', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
                   <span>تعديل النماذج</span>
-                  <input type="checkbox" ${App.state.rolePermissions.admin.edit ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'edit', this.checked)">
-                  <span class="toggle-slider"></span>
-                </label>
-                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <label class="toggle-switch">
+                    <input type="checkbox" ${App.state.rolePermissions.admin.edit ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'edit', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
                   <span>حذف النماذج</span>
-                  <input type="checkbox" ${App.state.rolePermissions.admin.delete ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'delete', this.checked)">
-                  <span class="toggle-slider"></span>
-                </label>
+                  <label class="toggle-switch">
+                    <input type="checkbox" ${App.state.rolePermissions.admin.delete ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'delete', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
               </div>
 
               <!-- Super Admin Permissions -->
               <div style="flex:1; min-width:250px; background:var(--bg-secondary); padding:15px; border-radius:8px;">
                 <h4>صلاحيات السوبر أدمن (Super Admin)</h4>
-                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
                   <span>إنشاء النماذج</span>
-                  <input type="checkbox" ${App.state.rolePermissions.super_admin.create ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'create', this.checked)">
-                  <span class="toggle-slider"></span>
-                </label>
-                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <label class="toggle-switch">
+                    <input type="checkbox" ${App.state.rolePermissions.super_admin.create ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'create', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
                   <span>تعديل النماذج</span>
-                  <input type="checkbox" ${App.state.rolePermissions.super_admin.edit ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'edit', this.checked)">
-                  <span class="toggle-slider"></span>
-                </label>
-                <label class="toggle-switch" style="display:flex; justify-content:space-between; margin-top:10px; width: 100%;">
+                  <label class="toggle-switch">
+                    <input type="checkbox" ${App.state.rolePermissions.super_admin.edit ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'edit', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
                   <span>حذف النماذج</span>
-                  <input type="checkbox" ${App.state.rolePermissions.super_admin.delete ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'delete', this.checked)">
-                  <span class="toggle-slider"></span>
-                </label>
+                  <label class="toggle-switch">
+                    <input type="checkbox" ${App.state.rolePermissions.super_admin.delete ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'delete', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
