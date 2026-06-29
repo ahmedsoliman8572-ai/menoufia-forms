@@ -234,13 +234,24 @@
       <div class="builder-toolbar-right" style="display:flex; gap:8px; align-items:center;">
         <button class="btn btn-ghost" onclick="App.undo()" title="تراجع (Ctrl+Z)">↶</button>
         <button class="btn btn-ghost" onclick="App.redo()" title="إعادة (Ctrl+Y)">↷</button>
-        <button class="btn btn-ghost" onclick="App.openShareModal()" id="btn-share" title="مشاركة" aria-label="مشاركة النموذج"> مشاركة</button>
-        <button class="btn btn-ghost" onclick="App.openFormSettings()" id="btn-settings" title="إعدادات النموذج" aria-label="إعدادات النموذج">️ إعدادات النموذج</button>
-        <button class="btn btn-ghost" onclick="App.viewResponses()" id="btn-responses" title="الردود" aria-label="عرض الردود"> الردود</button>
-
-        <button class="btn btn-ghost" onclick="App.previewForm()" id="btn-preview" title="معاينة" aria-label="معاينة النموذج">️ معاينة</button>
-        <button class="btn btn-primary" onclick="App.saveCurrentForm()" id="btn-save" title="حفظ" aria-label="حفظ النموذج"> حفظ</button>
-        <button class="btn btn-danger" onclick="App.deleteCurrentForm()" id="btn-delete-form" title="حذف النموذج" aria-label="حذف النموذج">️ حذف</button>
+        <button class="btn btn-ghost" onclick="App.openShareModal()" id="btn-share" title="مشاركة" aria-label="مشاركة النموذج">
+          <span class="desktop-text">مشاركة</span><span class="mobile-icon">🔗</span>
+        </button>
+        <button class="btn btn-ghost" onclick="App.openFormSettings()" id="btn-settings" title="إعدادات النموذج" aria-label="إعدادات النموذج">
+          <span class="desktop-text">إعدادات النموذج</span><span class="mobile-icon">⚙️</span>
+        </button>
+        <button class="btn btn-ghost" onclick="App.viewResponses()" id="btn-responses" title="الردود" aria-label="عرض الردود">
+          <span class="desktop-text">الردود</span><span class="mobile-icon">📊</span>
+        </button>
+        <button class="btn btn-ghost" onclick="App.previewForm()" id="btn-preview" title="معاينة" aria-label="معاينة النموذج">
+          <span class="desktop-text">معاينة</span><span class="mobile-icon">👁️</span>
+        </button>
+        <button class="btn btn-primary" onclick="App.saveCurrentForm()" id="btn-save" title="حفظ" aria-label="حفظ النموذج">
+          <span class="desktop-text">حفظ</span><span class="mobile-icon">💾</span>
+        </button>
+        <button class="btn btn-danger" onclick="App.deleteCurrentForm()" id="btn-delete-form" title="حذف النموذج" aria-label="حذف النموذج">
+          <span class="desktop-text">حذف</span><span class="mobile-icon">🗑️</span>
+        </button>
       </div>
     </div>
 
