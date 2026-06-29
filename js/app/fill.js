@@ -14,7 +14,7 @@ Object.assign(window.App, {
 
     if(!form && this.state.currentFormId) {
       if (header) header.innerHTML = '';
-      if (body) body.innerHTML = '<div style="text-align:center; padding: 50px;"><div style="font-size:3rem; margin-bottom:15px; animation: pulse 1.5s infinite;">⏳</div><h3 style="color:var(--primary);">جاري تحميل النموذج...</h3><p style="color:var(--text-secondary);">يرجى الانتظار بضع ثوانٍ</p></div>';
+      if (body) body.innerHTML = '<div style="text-align:center; padding: 50px;"><div style="font-size:3rem; margin-bottom:15px; animation: pulse 1.5s infinite;"></div><h3 style="color:var(--primary);">جاري تحميل النموذج...</h3><p style="color:var(--text-secondary);">يرجى الانتظار بضع ثوانٍ</p></div>';
       
       form = await this.fetchFormFromCloud(this.state.currentFormId);
       
@@ -27,7 +27,7 @@ Object.assign(window.App, {
         if (body) {
           body.innerHTML = `
             <div style="text-align:center; padding: 50px;">
-              <div style="font-size:4rem; margin-bottom:15px;">🚫</div>
+              <div style="font-size:4rem; margin-bottom:15px;"></div>
               <h2 style="color:var(--danger); margin-bottom:15px;">النموذج غير موجود</h2>
               <p style="color:var(--text-secondary); margin-bottom:20px;">هذا النموذج غير موجود أو تم حذفه من قبل المنشئ.</p>
             </div>
@@ -40,7 +40,7 @@ Object.assign(window.App, {
       if (body) {
         body.innerHTML = `
           <div style="text-align:center; padding: 50px;">
-            <div style="font-size:4rem; margin-bottom:15px;">🚫</div>
+            <div style="font-size:4rem; margin-bottom:15px;"></div>
             <h2 style="color:var(--danger); margin-bottom:15px;">النموذج غير موجود</h2>
             <p style="color:var(--text-secondary); margin-bottom:20px;">هذا النموذج غير موجود أو تم حذفه من قبل المنشئ.</p>
           </div>
@@ -77,7 +77,7 @@ Object.assign(window.App, {
     if(isClosed) {
       header.innerHTML = `
         <div style="text-align:center; padding: 40px 20px;">
-          <h2 style="color:var(--text); margin-bottom:15px;">النموذج مغلق 🔒</h2>
+          <h2 style="color:var(--text); margin-bottom:15px;">النموذج مغلق </h2>
           <p style="color:var(--text-secondary); font-size:1.1rem; line-height:1.6;">${closedReason}</p>
         </div>
       `;
@@ -132,7 +132,7 @@ Object.assign(window.App, {
 
     let themeToggleHtml = form.darkModeEnabled ? `
       <div style="position:absolute; top:20px; left:20px; z-index:10;">
-        <button class="icon-btn" onclick="const p=document.getElementById('page-fill'); p.classList.toggle('dark-mode'); this.innerText=p.classList.contains('dark-mode') ? '☀️' : '🌙'" title="تبديل الوضع الليلي">☀️</button>
+        <button class="icon-btn" onclick="const p=document.getElementById('page-fill'); p.classList.toggle('dark-mode'); this.innerText=p.classList.contains('dark-mode') ? '' : ''" title="تبديل الوضع الليلي"></button>
       </div>
     ` : '';
 
@@ -181,7 +181,7 @@ Object.assign(window.App, {
       if (step < pages.length - 1) {
         html += `<button type="button" class="btn btn-primary" style="flex:1; min-width:120px; max-width:320px; padding:14px;" onclick="App.nextPage()">التالي</button>`;
       } else {
-        html += `<button type="submit" class="btn btn-primary submit-btn" id="submit-btn" style="flex:2; min-width:200px; max-width:320px;">إرسال النموذج 🚀</button>`;
+        html += `<button type="submit" class="btn btn-primary submit-btn" id="submit-btn" style="flex:2; min-width:200px; max-width:320px;">إرسال النموذج </button>`;
       }
       html += `</div></div>`;
     });
@@ -316,7 +316,7 @@ Object.assign(window.App, {
           <input type="text" class="input-base" id="${id}" name="${field.id}" placeholder="${ph}"
             oninput="App.validateArabicNameLive(this, '${field.id}')" autocomplete="off">
           <div class="input-meta-row">
-            <div class="field-help">📝 يجب إدخال 4 كلمات على الأقل بحروف عربية فقط (بدون أرقام أو حروف إنجليزية)</div>
+            <div class="field-help">يجب إدخال 4 كلمات على الأقل بحروف عربية فقط (بدون أرقام أو حروف إنجليزية)</div>
             <div class="char-counter" id="counter-${field.id}">0 / 4 كلمات</div>
           </div>`;
       case 'english_name':
@@ -324,7 +324,7 @@ Object.assign(window.App, {
           <input type="text" class="input-base" id="${id}" name="${field.id}" placeholder="${ph}"
             oninput="App.validateEnglishNameLive(this, '${field.id}')" dir="ltr" style="text-align:left;" autocomplete="off">
           <div class="input-meta-row">
-            <div class="field-help">📝 Enter at least 4 words using English letters only (no numbers or Arabic)</div>
+            <div class="field-help">Enter at least 4 words using English letters only (no numbers or Arabic)</div>
             <div class="char-counter" id="counter-${field.id}">0 / 4 words</div>
           </div>`;
       case 'national_id':
@@ -332,27 +332,20 @@ Object.assign(window.App, {
           <input type="tel" class="input-base" id="${id}" name="${field.id}" placeholder="${ph}" maxlength="14"
             oninput="App.validateNationalIdLive(this, '${field.id}')" dir="ltr" style="text-align:left; letter-spacing: 3px; font-weight:700; font-size:1.15rem;" autocomplete="off">
           <div class="input-meta-row">
-            <div class="field-help">🪪 يجب إدخال 14 رقماً بالضبط (أرقام فقط)</div>
+            <div class="field-help">يجب إدخال 14 رقماً بالضبط (أرقام فقط)</div>
             <div class="char-counter" id="counter-${field.id}">0 / 14</div>
           </div>
           <div id="nid-data-${field.id}" style="display:none; margin-top:10px; padding:10px; background:var(--bg-glass); border-radius:var(--radius-md); border-right:3px solid var(--primary); font-size:0.9rem;">
             <!-- Extracted data will be shown here -->
           </div>`;
-      case 'tax_id':
-        return `
-          <input type="tel" class="input-base" id="${id}" name="${field.id}" placeholder="${ph || '123456789'}" maxlength="9"
-            oninput="App.validateTaxIdLive(this, '${field.id}')" dir="ltr" style="text-align:left; letter-spacing: 2px;" autocomplete="off">
-          <div class="input-meta-row">
-            <div class="field-help">💳 يجب إدخال 9 أرقام بالضبط</div>
-            <div class="char-counter" id="counter-${field.id}">0 / 9</div>
-          </div>`;
+
       case 'email':
         return `<input type="email" class="input-base" id="${id}" name="${field.id}" placeholder="${ph || 'example@domain.com'}" oninput="App.validateEmailLive(this, '${field.id}')" dir="ltr" style="text-align:left;">`;
       case 'phone':
       case 'whatsapp':
         return `<input type="tel" class="input-base" id="${id}" name="${field.id}" placeholder="${ph || '01xxxxxxxxx'}" maxlength="11" oninput="App.validatePhoneLive(this, '${field.id}')" dir="ltr" style="text-align:left;">
           <div class="input-meta-row">
-            <div class="field-help">📞 رقم موبايل مصري يبدأ بـ 01 (11 رقم)</div>
+            <div class="field-help">رقم موبايل مصري يبدأ بـ 01 (11 رقم)</div>
             <div class="char-counter" id="counter-${field.id}">0 / 11</div>
           </div>`;
       case 'url':
@@ -368,14 +361,14 @@ Object.assign(window.App, {
           <div id="preview-${field.id}" style="margin-top:10px; display:none; max-width:200px; border-radius:8px; overflow:hidden; border:2px solid var(--border-color);">
              <img src="" style="width:100%; height:auto; display:block;">
           </div>
-          <div class="field-help" id="upload-status-${field.id}">🖼️ اختر صورة للرفع</div>
+          <div class="field-help" id="upload-status-${field.id}">اختر صورة للرفع</div>
         `;
       case 'signature':
         return `
           <div style="border:2px dashed var(--border-color); border-radius:var(--radius-md); background:var(--bg-card); padding:10px; text-align:center;">
             <canvas id="sig-canvas-${field.id}" width="300" height="150" style="background:#fff; border:1px solid #ccc; border-radius:4px; touch-action:none;"></canvas>
             <br>
-            <button type="button" class="btn btn-ghost" onclick="App.clearSignature('${field.id}')" style="margin-top:10px; font-size:0.9rem;">مسح التوقيع 🧹</button>
+            <button type="button" class="btn btn-ghost" onclick="App.clearSignature('${field.id}')" style="margin-top:10px; font-size:0.9rem;">مسح التوقيع </button>
             <input type="hidden" id="hidden-sig-${field.id}" name="${field.id}">
           </div>
         `;
@@ -417,7 +410,7 @@ Object.assign(window.App, {
       case 'governorate':
         return `<div class="select-wrap">
           <select class="input-base" id="${id}" name="${field.id}" onchange="App.handleGovernorateChange(this); App.updateProgress()">
-            <option value="" disabled selected>🔽 اختر من القائمة...</option>
+            <option value="" disabled selected>اختر من القائمة...</option>
             ${(field.options||[]).map(o => `<option value="${this.escape(o)}">${this.escape(o)}</option>`).join('')}
           </select>
         </div>`;
@@ -427,13 +420,13 @@ Object.assign(window.App, {
       case 'dropdown':
         return `<div class="select-wrap">
           <select class="input-base" id="${id}" name="${field.id}" onchange="App.updateProgress()">
-            <option value="" disabled selected>🔽 اختر من القائمة...</option>
+            <option value="" disabled selected>اختر من القائمة...</option>
             ${(field.options||[]).map(o => `<option value="${this.escape(o)}">${this.escape(o)}</option>`).join('')}
           </select>
         </div>`;
       case 'rating':
         return `<div class="rating-wrap" id="${id}" style="display:flex; gap:8px; font-size:2rem; cursor:pointer;">
-          ${[1,2,3,4,5].map(n => `<span class="star" data-val="${n}" onclick="App.setRating('${field.id}', ${n})" style="color:#ccc;">⭐</span>`).join('')}
+          ${[1,2,3,4,5].map(n => `<span class="star" data-val="${n}" onclick="App.setRating('${field.id}', ${n})" style="color:#ccc;"></span>`).join('')}
           <input type="hidden" id="rating-val-${field.id}" name="${field.id}" value="">
         </div>`;
       case 'linear_scale':
@@ -449,7 +442,7 @@ Object.assign(window.App, {
         return `<div class="payment-mock-wrap" style="border:1px solid var(--border); padding:15px; border-radius:8px; background:var(--bg-card); box-shadow:0 2px 8px rgba(0,0,0,0.05);">
           <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
             <span style="font-weight:bold; color:var(--text);">بطاقة ائتمان</span>
-            <span>💳</span>
+            <span></span>
           </div>
           <input type="text" class="input-base" id="input-${field.id}-card" placeholder="رقم البطاقة (0000 0000 0000 0000)" style="margin-bottom:10px; font-family:monospace;">
           <div style="display:flex; gap:10px;">
@@ -493,11 +486,11 @@ Object.assign(window.App, {
       if(words >= 4) {
         input.classList.add('input-valid');
         group.classList.add('is-valid');
-        successEl.innerHTML = '✅ الاسم صحيح';
+        successEl.innerHTML = 'الاسم صحيح';
         successEl.style.display = 'flex';
       } else {
         input.classList.add('input-error');
-        errEl.innerHTML = `⚠️ أدخل ${4 - words} كلمات أخرى على الأقل`;
+        errEl.innerHTML = `أدخل ${4 - words} كلمات أخرى على الأقل`;
         errEl.style.display = 'flex';
       }
     }
@@ -536,11 +529,11 @@ Object.assign(window.App, {
       if(words >= 4) {
         input.classList.add('input-valid');
         group.classList.add('is-valid');
-        successEl.innerHTML = '✅ Name is valid';
+        successEl.innerHTML = 'Name is valid';
         successEl.style.display = 'flex';
       } else {
         input.classList.add('input-error');
-        errEl.innerHTML = `⚠️ Enter at least ${4 - words} more word(s)`;
+        errEl.innerHTML = `Enter at least ${4 - words} more word(s)`;
         errEl.style.display = 'flex';
       }
     }
@@ -580,17 +573,17 @@ Object.assign(window.App, {
       if(Validators.isValidNationalId(input.value)) {
         input.classList.add('input-valid');
         group.classList.add('is-valid');
-        successEl.innerHTML = '✅ الرقم القومي صحيح';
+        successEl.innerHTML = 'الرقم القومي صحيح';
         successEl.style.display = 'flex';
         
         const data = Validators.parseNationalId(input.value);
         if(data && dataDiv) {
-          dataDiv.innerHTML = `<strong>البيانات المستخرجة:</strong><br>📅 تاريخ الميلاد: ${data.birthDate} <br>🗺️ المحافظة: ${data.governorate} <br>🚻 النوع: ${data.gender}`;
+          dataDiv.innerHTML = `<strong>البيانات المستخرجة:</strong><br>تاريخ الميلاد: ${data.birthDate} <br>المحافظة: ${data.governorate} <br>النوع: ${data.gender}`;
           dataDiv.style.display = 'block';
         }
       } else {
         input.classList.add('input-error');
-        errEl.innerHTML = `⚠️ تبقى ${14 - len} رقم`;
+        errEl.innerHTML = `تبقى ${14 - len} رقم`;
         errEl.style.display = 'flex';
         if(dataDiv) dataDiv.style.display = 'none';
       }
@@ -616,11 +609,11 @@ Object.assign(window.App, {
       if(Validators.isEmail(val)) {
         input.classList.add('input-valid');
         group.classList.add('is-valid');
-        successEl.innerHTML = '✅ بريد إلكتروني صحيح';
+        successEl.innerHTML = 'بريد إلكتروني صحيح';
         successEl.style.display = 'flex';
       } else {
         input.classList.add('input-error');
-        errEl.innerHTML = '⚠️ صيغة البريد الإلكتروني غير صحيحة';
+        errEl.innerHTML = 'صيغة البريد الإلكتروني غير صحيحة';
         errEl.style.display = 'flex';
       }
     }
@@ -648,48 +641,18 @@ Object.assign(window.App, {
       if(Validators.isEgyptianPhone(val)) {
         input.classList.add('input-valid');
         group.classList.add('is-valid');
-        successEl.innerHTML = '✅ رقم موبايل صحيح';
+        successEl.innerHTML = 'رقم موبايل صحيح';
         successEl.style.display = 'flex';
       } else {
         input.classList.add('input-error');
-        errEl.innerHTML = '⚠️ يجب أن يكون 11 رقماً ويبدأ بـ 01';
+        errEl.innerHTML = 'يجب أن يكون 11 رقماً ويبدأ بـ 01';
         errEl.style.display = 'flex';
       }
     }
     this.updateProgress();
   },
 
-  validateTaxIdLive(input, fieldId) {
-    let val = Validators.stripNonDigits(input.value).slice(0, 9);
-    if(val !== input.value) input.value = val;
 
-    const len = val.length;
-    const counter = document.getElementById(`counter-${fieldId}`);
-    if(counter) counter.textContent = `${len} / 9`;
-
-    const group = document.getElementById(`group-${fieldId}`);
-    const errEl = document.getElementById(`error-${fieldId}`);
-    const successEl = document.getElementById(`success-${fieldId}`);
-    
-    input.classList.remove('input-error', 'input-valid');
-    group.classList.remove('has-error', 'is-valid');
-    errEl.style.display = 'none';
-    successEl.style.display = 'none';
-    
-    if(len > 0) {
-      if(Validators.isTaxId(val)) {
-        input.classList.add('input-valid');
-        group.classList.add('is-valid');
-        successEl.innerHTML = '✅ بطاقة ضريبية صحيحة';
-        successEl.style.display = 'flex';
-      } else {
-        input.classList.add('input-error');
-        errEl.innerHTML = '⚠️ البطاقة الضريبية يجب أن تتكون من 9 أرقام';
-        errEl.style.display = 'flex';
-      }
-    }
-    this.updateProgress();
-  },
 
   validateUrlLive(input, fieldId) {
     const val = input.value.trim();
@@ -706,11 +669,11 @@ Object.assign(window.App, {
       if(Validators.isUrl(val)) {
         input.classList.add('input-valid');
         group.classList.add('is-valid');
-        successEl.innerHTML = '✅ رابط صحيح';
+        successEl.innerHTML = 'رابط صحيح';
         successEl.style.display = 'flex';
       } else {
         input.classList.add('input-error');
-        errEl.innerHTML = '⚠️ صيغة الرابط غير صحيحة (مثال: https://google.com)';
+        errEl.innerHTML = 'صيغة الرابط غير صحيحة (مثال: https://google.com)';
         errEl.style.display = 'flex';
       }
     }
@@ -747,7 +710,7 @@ Object.assign(window.App, {
     if (markazField) {
       const markazSelect = document.getElementById(`input-${markazField.id}`);
       if (markazSelect) {
-        let html = '<option value="" disabled selected>🔽 اختر من القائمة...</option>';
+        let html = '<option value="" disabled selected>اختر من القائمة...</option>';
         centers.forEach(c => {
           html += `<option value="${this.escape(c)}">${this.escape(c)}</option>`;
         });
@@ -830,7 +793,7 @@ Object.assign(window.App, {
     const success = document.getElementById(`success-${fid}`);
     if(grp) grp.classList.add('has-error');
     if(grp) grp.classList.remove('is-valid');
-    if(err) { err.innerHTML = `⚠️ ${msg}`; err.style.display = 'flex'; }
+    if(err) { err.innerHTML = `${msg}`; err.style.display = 'flex'; }
     if(success) success.style.display = 'none';
   },
 
@@ -937,7 +900,7 @@ Object.assign(window.App, {
 
     const btn = document.getElementById('submit-btn');
     const origText = btn.innerHTML;
-    btn.innerHTML = '<span class="btn-loading">⏳</span> جاري الإرسال...';
+    btn.innerHTML = '<span class="btn-loading"></span> جاري الإرسال...';
     btn.disabled = true;
     btn.style.opacity = '0.7';
 
@@ -971,7 +934,7 @@ Object.assign(window.App, {
 
       // --- PRE-SUBMIT DUPLICATE CHECK (Backend) ---
       if (form.limitOneResponse && !this.state.isPreviewMode) {
-        btn.innerHTML = '⏳ جاري التحقق...';
+        btn.innerHTML = 'جاري التحقق...';
         let duplicateFound = false;
         
         for (let key in payloadData) {
@@ -1011,7 +974,7 @@ Object.assign(window.App, {
           if (body) {
             body.innerHTML = `
               <div style="text-align:center; padding: 50px; animation: slideUp 0.5s ease-out;">
-                <div style="font-size:4rem; margin-bottom:15px;">🔒</div>
+                <div style="font-size:4rem; margin-bottom:15px;"></div>
                 <h2 style="color:var(--danger); margin-bottom:15px;">عفواً، تم تسجيل ردك مسبقاً</h2>
                 <p style="color:var(--text-secondary); line-height:1.6;">لقد وجدنا أن بياناتك (مثل رقم الهاتف أو الإيميل أو الرقم القومي) مسجلة لدينا بالفعل في هذا النموذج. لا يُسمح بالتكرار.</p>
               </div>
@@ -1095,7 +1058,7 @@ Object.assign(window.App, {
           <p style="color:var(--text-secondary); font-size:1.05rem; margin-bottom:36px; line-height:1.8;">${this.escape(form.thankYouMessage || 'شكراً لك، تم تسجيل ردك في قاعدة البيانات بنجاح.')}</p>
           ${quizHtml}
           <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-            ${(!form.limitOneResponse && form.allowResubmit !== false) ? `<button class="btn btn-primary" onclick="App.renderFillForm()">📝 إرسال رد آخر</button>` : ''}
+            ${(!form.limitOneResponse && form.allowResubmit !== false) ? `<button class="btn btn-primary" onclick="App.renderFillForm()">إرسال رد آخر</button>` : ''}
           </div>
           ${redirectHtml}
         </div>
@@ -1137,12 +1100,12 @@ Object.assign(window.App, {
     if (!file) {
       previewContainer.style.display = 'none';
       hiddenInput.value = '';
-      statusText.innerHTML = '🖼️ اختر صورة للرفع';
+      statusText.innerHTML = 'اختر صورة للرفع';
       return;
     }
 
     try {
-      statusText.innerHTML = '<span style="color:var(--primary);">جاري الرفع للسحابة... ⏳</span>';
+      statusText.innerHTML = '<span style="color:var(--primary);">جاري الرفع للسحابة... </span>';
       
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -1163,7 +1126,7 @@ Object.assign(window.App, {
       previewImg.src = publicUrl;
       previewContainer.style.display = 'block';
       hiddenInput.value = publicUrl;
-      statusText.innerHTML = '<span style="color:var(--success);">تم الرفع بنجاح ✅</span>';
+      statusText.innerHTML = '<span style="color:var(--success);">تم الرفع بنجاح </span>';
       this.updateProgress();
 
     } catch(err) {
