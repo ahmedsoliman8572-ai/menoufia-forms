@@ -38,11 +38,16 @@ window.App = {
     // Check for share link
     const urlParams = new URLSearchParams(window.location.search);
     const fillId = urlParams.get('fill');
+    const scannerId = urlParams.get('scanner');
     if(fillId) {
       // Hide Landing page navbar completely when sharing specific form
       const navbar = document.getElementById('navbar');
       if(navbar) navbar.style.display = 'none';
       this.navigate('fill', {formId: fillId});
+    } else if (scannerId) {
+      const navbar = document.getElementById('navbar');
+      if(navbar) navbar.style.display = 'none';
+      this.navigateScanner(scannerId);
     } else {
       if(!this.state.currentUser) {
         this.renderDashboard();
@@ -277,6 +282,92 @@ window.App = {
     const menuBtn = document.querySelector('.mobile-menu-btn');
     if(mobileMenu) mobileMenu.classList.remove('mobile-open');
     if(menuBtn) menuBtn.classList.remove('active');
+  },
+
+  async navigateScanner(formId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    this.state.currentView = 'scanner';
+    this.state.currentFormId = formId;
+    document.getElementById('page-scanner').classList.add('active');
+    
+    // Hide navbar for scanner mode
+    const navbar = document.getElementById('navbar');
+    if(navbar) navbar.style.display = 'none';
+
+    // Initialize Scanner
+    if (!this._html5QrcodeScanner) {
+      this._html5QrcodeScanner = new Html5QrcodeScanner("scanner-reader", { fps: 10, qrbox: {width: 250, height: 250} }, /* verbose= */ false);
+      
+      this._html5QrcodeScanner.render(async (decodedText, decodedResult) => {
+        // Prevent double scans
+        if(this._isScanningTicket) return;
+        this._isScanningTicket = true;
+        
+        // Pause scanning to show result
+        this._html5QrcodeScanner.pause(true);
+
+        const resultBox = document.getElementById('scanner-result');
+        const resultTitle = document.getElementById('scanner-result-title');
+        const resultText = document.getElementById('scanner-result-text');
+
+        resultBox.style.display = 'block';
+        resultBox.style.background = 'var(--bg-card)';
+        resultTitle.innerText = 'جاري التحقق...';
+        resultTitle.style.color = 'var(--text)';
+        resultText.innerText = 'الرجاء الانتظار قليلاً';
+
+        try {
+          const { data, error } = await supabaseClient.from('responses').select('data').eq('id', decodedText).eq('form_id', formId).single();
+          
+          if(error || !data) {
+            throw new Error('التذكرة غير صحيحة أو لا تنتمي لهذه الفعالية');
+          }
+
+          if(data.data._checked_in) {
+            resultBox.style.background = 'rgba(239, 68, 68, 0.1)';
+            resultTitle.style.color = 'var(--danger)';
+            resultTitle.innerText = 'عفواً، التذكرة مستخدمة مسبقاً ❌';
+            const checkInTime = new Date(data.data._checked_in_at).toLocaleTimeString('ar-EG');
+            resultText.innerText = `تم تسجيل حضور هذه التذكرة مسبقاً الساعة ${checkInTime}`;
+          } else {
+            // Update to checked in
+            data.data._checked_in = true;
+            data.data._checked_in_at = new Date().toISOString();
+            
+            const { error: updateError } = await supabaseClient.from('responses').update({ data: data.data }).eq('id', decodedText);
+            if(updateError) throw updateError;
+
+            // Extract Name for greeting
+            let guestName = 'زائر';
+            for (let key in data.data) {
+              if (key.includes('الاسم') || key.toLowerCase().includes('name')) {
+                guestName = data.data[key]; break;
+              }
+            }
+
+            resultBox.style.background = 'rgba(16, 185, 129, 0.1)';
+            resultTitle.style.color = '#10B981';
+            resultTitle.innerText = 'تم تسجيل الحضور بنجاح ✅';
+            resultText.innerText = `أهلاً بك: ${guestName}`;
+          }
+        } catch(err) {
+          resultBox.style.background = 'rgba(239, 68, 68, 0.1)';
+          resultTitle.style.color = 'var(--danger)';
+          resultTitle.innerText = 'خطأ في التذكرة ❌';
+          resultText.innerText = err.message || 'لم نتمكن من التحقق من هذه التذكرة';
+        }
+
+        // Resume scanning after 3 seconds
+        setTimeout(() => {
+          resultBox.style.display = 'none';
+          this._isScanningTicket = false;
+          this._html5QrcodeScanner.resume();
+        }, 3000);
+
+      }, (error) => {
+        // parse error, ignore
+      });
+    }
   },
 
     toggleTheme() {
