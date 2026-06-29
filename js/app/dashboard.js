@@ -63,12 +63,12 @@ Object.assign(window.App, {
         <div class="form-card" onclick="App.navigate('builder', {formId: '${form.id}'})" style="position:relative;">
           ${App.hasPermission('delete') ? `<button class="del-btn-x" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف النموذج نهائياً" style="position:absolute; top:10px; left:10px; width:28px; height:28px; border-radius:50%; background:rgba(239,68,68,0.1); color:var(--danger); border:none; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer; z-index:10; transition:0.2s;" onmouseenter="this.style.background='rgba(239,68,68,0.2)'; this.style.transform='scale(1.1)';" onmouseleave="this.style.background='rgba(239,68,68,0.1)'; this.style.transform='scale(1)';">✕</button>` : ''}
           <div class="form-card-actions" style="margin-left: 30px;">
-            <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">مشاركة</button>
-            <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">نسخ</button>
-            <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">ردود</button>
-            <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">فتح</button>
+            <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">🔗</button>
+            <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>
+            <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">📊</button>
+            <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">👁️</button>
           </div>
-          <div class="form-card-banner"></div>
+          <div class="form-card-banner">📝</div>
           <div class="form-card-body">
             <div class="form-card-title">${this.escape(form.title)}</div>
             <div class="form-card-meta">
