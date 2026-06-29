@@ -132,7 +132,7 @@ Object.assign(window.App, {
 
     let themeToggleHtml = form.darkModeEnabled ? `
       <div style="position:absolute; top:20px; left:20px; z-index:10;">
-        <button class="icon-btn" onclick="const p=document.getElementById('page-fill'); p.classList.toggle('dark-mode'); this.innerText=p.classList.contains('dark-mode') ? '' : ''" title="تبديل الوضع الليلي"></button>
+        <button class="icon-btn" onclick="const p=document.getElementById('page-fill'); p.classList.toggle('dark-mode'); this.innerText=p.classList.contains('dark-mode') ? '☀️' : '🌙'" title="تبديل الوضع الليلي">🌙</button>
       </div>
     ` : '';
 
