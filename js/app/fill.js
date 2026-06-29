@@ -1056,10 +1056,13 @@ Object.assign(window.App, {
       let qrHtml = '';
       if(form.enableTicketing && responseId) {
         qrHtml = `
-          <div style="margin: 20px auto; padding: 20px; background: white; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-            <h4 style="margin-top:0; margin-bottom:15px; color:#111;">تذكرتك (QR Code)</h4>
-            <div id="ticket-qr-code"></div>
-            <p style="font-size:0.85rem; color:#666; margin-top:10px; margin-bottom:0;">يرجى الاحتفاظ بصورة لهذه التذكرة لإظهارها للمنظمين</p>
+          <div style="margin: 30px auto; max-width: 320px; padding: 25px 20px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; border: 1px solid #f3f4f6; display: flex; flex-direction: column; align-items: center;">
+            <h4 style="margin: 0 0 20px 0; color: #111827; font-size: 1.2rem; font-weight: 700;">تذكرتك (QR Code)</h4>
+            <div id="ticket-qr-code" style="display: inline-flex; justify-content: center; align-items: center; background: white; padding: 15px; border-radius: 12px; border: 2px dashed #e5e7eb; min-width: 200px; min-height: 200px;"></div>
+            <p style="margin: 20px 0 15px 0; font-size: 0.9rem; color: #6b7280; line-height: 1.5;">يرجى الاحتفاظ بصورة لهذه التذكرة أو تحميلها لإظهارها للمنظمين عند الدخول.</p>
+            <button type="button" onclick="App.downloadTicketQR()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 12px rgba(var(--primary-rgb, 79,70,229), 0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+              <span style="font-size:1.1rem;">📥</span> تحميل التذكرة
+            </button>
           </div>
         `;
       }
@@ -1266,8 +1269,34 @@ Object.assign(window.App, {
     if(canvas) {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      document.getElementById(`hidden-sig-${fieldId}`).value = '';
-      this.updateProgress();
+      const hidden = document.getElementById(`hidden-sig-${fieldId}`);
+      if(hidden) {
+        hidden.value = '';
+        this.updateProgress();
+      }
+    }
+  },
+
+  downloadTicketQR() {
+    const qrContainer = document.getElementById("ticket-qr-code");
+    if(qrContainer) {
+      const canvas = qrContainer.querySelector('canvas');
+      const img = qrContainer.querySelector('img'); 
+      let dataUrl = '';
+      if(canvas) {
+        dataUrl = canvas.toDataURL("image/png");
+      } else if (img && img.src) {
+        dataUrl = img.src;
+      }
+      
+      if(dataUrl) {
+        const link = document.createElement('a');
+        link.download = 'ticket-qr.png';
+        link.href = dataUrl;
+        link.click();
+      } else {
+        App.showToast('تعذر تحميل التذكرة', 'error');
+      }
     }
   }
 });
