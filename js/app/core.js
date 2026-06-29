@@ -16,7 +16,11 @@ window.App = {
     settings: { theme: 'light', lang: 'ar' },
     currentFormId: null,
     selectedFieldId: null,
-    history: { undoStack: [], redoStack: [] }
+    history: { undoStack: [], redoStack: [] },
+    rolePermissions: {
+      admin: { create: true, edit: true, delete: false },
+      super_admin: { create: true, edit: true, delete: true }
+    }
   },
 
   async init() {
@@ -92,13 +96,14 @@ window.App = {
       }
 
       if (isAuthorized) {
+        await this.loadRolePermissions();
         if(loginBtn) loginBtn.style.display = 'none';
         if(userInfo) userInfo.style.display = 'flex';
         if(userEmail) userEmail.innerText = this.state.currentUser.email;
-        if(newFormBtn) newFormBtn.style.display = 'inline-flex';
-        if(adminPanelBtn) adminPanelBtn.style.display = this.state.userRole === 'super_admin' ? 'inline-block' : 'none';
-        if(btnContacts) btnContacts.style.display = this.state.userRole === 'super_admin' ? 'inline-flex' : 'none';
-        if(btnInsights) btnInsights.style.display = this.state.userRole === 'super_admin' ? 'inline-flex' : 'none';
+        if(newFormBtn) newFormBtn.style.display = this.hasPermission('create') ? 'inline-flex' : 'none';
+        if(adminPanelBtn) adminPanelBtn.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-block' : 'none';
+        if(btnContacts) btnContacts.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-flex' : 'none';
+        if(btnInsights) btnInsights.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-flex' : 'none';
         
         if(this.state.currentView === 'dashboard') {
           this.loadForms();
@@ -243,6 +248,12 @@ window.App = {
     
     if(view === 'dashboard') this.renderDashboard();
     if(view === 'builder') { 
+      if (!this.hasPermission('edit')) {
+        this.showToast('عفواً، لا تملك صلاحية تعديل النماذج', 'error');
+        this.state.currentView = 'dashboard';
+        document.getElementById(`page-dashboard`).classList.add('active');
+        return;
+      }
       this.state.selectedFieldId = null; 
       const form = this.getForm();
       if(form && !form.fields) {
@@ -276,7 +287,7 @@ window.App = {
 
   applyTheme() {
     document.documentElement.setAttribute('data-theme', this.state.settings.theme);
-    document.getElementById('theme-toggle').innerText = this.state.settings.theme === 'dark' ? '☀️' : '🌙';
+    document.getElementById('theme-toggle').innerText = this.state.settings.theme === 'dark' ? '' : '';
   },
 
     toggleMobileMenu() {
@@ -345,7 +356,7 @@ Object.assign(window.App, {
     const t = document.createElement('div');
     t.className = `toast ${type}`;
     t.innerHTML = `
-      <span>${type==='success'?'✅':type==='error'?'❌':'ℹ️'} ${msg}</span>
+      <span>${type==='success'?'':type==='error'?'':'ℹ️'} ${msg}</span>
       <div class="toast-progress"><div class="toast-progress-bar"></div></div>
     `;
     c.appendChild(t);
@@ -449,6 +460,21 @@ Object.assign(window.App, {
       btnOk.addEventListener('click', onOk);
       btnCancel.addEventListener('click', onCancel);
     });
+  },
+
+  async loadRolePermissions() {
+    try {
+      const { data } = await supabaseClient.from('forms').select('*').eq('id', 'role_permissions').single();
+      if (data && data.settings && data.settings.rolePermissions) {
+        this.state.rolePermissions = data.settings.rolePermissions;
+      }
+    } catch(e) {}
+  },
+
+  hasPermission(action) {
+    if (this.state.userRole === 'owner') return true;
+    const perms = this.state.rolePermissions[this.state.userRole];
+    return perms ? perms[action] : false;
   }
   
 });
