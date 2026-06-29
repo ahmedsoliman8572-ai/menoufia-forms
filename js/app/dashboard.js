@@ -15,10 +15,10 @@ Object.assign(window.App, {
     const governoratesCount = EGYPT_GOVERNORATES.length;
 
     const statsData = [
-      { value: totalForms, suffix: '', icon: '📋', label: 'نموذج تم إنشاؤه' },
-      { value: totalFields, suffix: '', icon: '📝', label: 'حقل تم إضافته' },
-      { value: totalSubmissions, suffix: '', icon: '📤', label: 'رد تم إرساله' },
-      { value: governoratesCount, suffix: '', icon: '🗺️', label: 'محافظة مدعومة' },
+      { value: totalForms, suffix: '', icon: '', label: 'نموذج تم إنشاؤه' },
+      { value: totalFields, suffix: '', icon: '', label: 'حقل تم إضافته' },
+      { value: totalSubmissions, suffix: '', icon: '', label: 'رد تم إرساله' },
+      { value: governoratesCount, suffix: '', icon: '️', label: 'محافظة مدعومة' },
     ];
 
     container.innerHTML = statsData.map(stat => `
@@ -38,11 +38,11 @@ Object.assign(window.App, {
           <h3 style="margin:0;">النماذج الخاصة بك</h3>
         </div>
         <div style="text-align:center; padding:60px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:2px dashed var(--border); margin-top:20px; animation: fadeIn 0.5s;">
-          <div style="font-size:4rem; margin-bottom:15px; display:inline-block; animation: float 3s ease-in-out infinite;">📋</div>
+          <div style="font-size:4rem; margin-bottom:15px; display:inline-block; animation: float 3s ease-in-out infinite;"></div>
           <h3 style="margin-bottom:10px; color:var(--text); font-size:1.5rem;">ليس لديك أي نماذج حتى الآن!</h3>
           <p style="color:var(--text-secondary); margin-bottom:25px; max-width:400px; margin-left:auto; margin-right:auto; line-height:1.6;">قم بإنشاء أول نموذج لك الآن لبدء جمع البيانات والردود بكل سهولة واحترافية.</p>
           <button class="btn btn-primary" onclick="App.createBlankForm()" style="padding:12px 24px; font-size:1.1rem; box-shadow:0 4px 15px rgba(79,70,229,0.3); border-radius:30px;">
-            <span style="margin-left:8px;">➕</span> إنشاء نموذج جديد
+            <span style="margin-left:8px;"></span> إنشاء نموذج جديد
           </button>
         </div>
       `;
@@ -61,14 +61,14 @@ Object.assign(window.App, {
       const responsesCount = form.responses_count || (form.submissions ? form.submissions.length : 0);
       html += `
         <div class="form-card" onclick="App.navigate('builder', {formId: '${form.id}'})" style="position:relative;">
-          <button class="del-btn-x" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف النموذج نهائياً" style="position:absolute; top:10px; left:10px; width:28px; height:28px; border-radius:50%; background:rgba(239,68,68,0.1); color:var(--danger); border:none; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer; z-index:10; transition:0.2s;" onmouseenter="this.style.background='rgba(239,68,68,0.2)'; this.style.transform='scale(1.1)';" onmouseleave="this.style.background='rgba(239,68,68,0.1)'; this.style.transform='scale(1)';">✕</button>
+          ${App.hasPermission('delete') ? `<button class="del-btn-x" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف النموذج نهائياً" style="position:absolute; top:10px; left:10px; width:28px; height:28px; border-radius:50%; background:rgba(239,68,68,0.1); color:var(--danger); border:none; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer; z-index:10; transition:0.2s;" onmouseenter="this.style.background='rgba(239,68,68,0.2)'; this.style.transform='scale(1.1)';" onmouseleave="this.style.background='rgba(239,68,68,0.1)'; this.style.transform='scale(1)';">✕</button>` : ''}
           <div class="form-card-actions" style="margin-left: 30px;">
-            <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">🔗</button>
-            <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>
-            <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">📊</button>
-            <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">👁️</button>
+            <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">مشاركة</button>
+            <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">نسخ</button>
+            <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">ردود</button>
+            <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">فتح</button>
           </div>
-          <div class="form-card-banner">📝</div>
+          <div class="form-card-banner"></div>
           <div class="form-card-body">
             <div class="form-card-title">${this.escape(form.title)}</div>
             <div class="form-card-meta">
@@ -140,7 +140,7 @@ Object.assign(window.App, {
         
         this.state.forms = this.state.forms.filter(f => f.id !== id);
         this.renderDashboard();
-        this.showToast('تم حذف النموذج بنجاح 🗑️', 'success');
+        this.showToast('تم حذف النموذج بنجاح ️', 'success');
       } catch(err) {
         console.error(err);
         this.showToast('حدث خطأ أثناء الحذف', 'error');
@@ -159,7 +159,7 @@ Object.assign(window.App, {
           
           this.state.forms = this.state.forms.filter(f => f.id !== formId);
           this.navigate('dashboard');
-          this.showToast('تم حذف النموذج بنجاح 🗑️', 'success');
+          this.showToast('تم حذف النموذج بنجاح ️', 'success');
         } catch(err) {
           console.error(err);
           this.showToast('حدث خطأ أثناء الحذف', 'error');
@@ -185,7 +185,7 @@ Object.assign(window.App, {
     this.state.stats.totalFormsCreated = (this.state.stats.totalFormsCreated || 0) + 1;
     this.save();
     this.renderDashboard();
-    this.showToast('تم نسخ النموذج بنجاح 📋', 'success');
+    this.showToast('تم نسخ النموذج بنجاح ', 'success');
   },
 
   
