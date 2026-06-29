@@ -985,10 +985,11 @@ Object.assign(window.App, {
       }
       // --------------------------------------------
 
+      let responseId = null;
       try {
         const { data: insertedData, error } = await supabaseClient.from('responses').insert([payload]).select();
         if(error) throw error;
-        const responseId = insertedData && insertedData.length > 0 ? insertedData[0].id : null;
+        responseId = insertedData && insertedData.length > 0 ? insertedData[0].id : null;
 
         // --- CRM Data Extraction ---
         let contactName = '';
