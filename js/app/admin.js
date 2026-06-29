@@ -3,7 +3,7 @@
 // =============================================
 Object.assign(window.App, {
   async renderAdmin() {
-    if(this.state.userRole !== 'super_admin') {
+    if(this.state.userRole !== 'super_admin' && this.state.userRole !== 'owner') {
       this.showToast('عفواً، لا تملك الصلاحيات للدخول إلى هذه الصفحة.', 'error');
       return this.navigate('dashboard');
     }
