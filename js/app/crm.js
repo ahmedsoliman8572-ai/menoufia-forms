@@ -32,7 +32,7 @@ Object.assign(window.App, {
             <td style="padding:12px; border:1px solid var(--border);">${this.escape(contact.phone || '-')}</td>
             <td style="padding:12px; border:1px solid var(--border);">${dateStr}</td>
             <td style="padding:12px; border:1px solid var(--border); text-align:center;">
-              <button class="btn btn-danger btn-sm" onclick="App.deleteContact('${contact.id}')" title="مسح"></button>
+              <button class="btn btn-danger btn-sm" onclick="App.deleteContact('${contact.id}')" title="مسح">🗑️</button>
             </td>
           </tr>
         `;
