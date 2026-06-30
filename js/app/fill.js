@@ -87,13 +87,22 @@ Object.assign(window.App, {
 
 
     if(isClosed) {
-      header.innerHTML = `
-        <div style="text-align:center; padding: 40px 20px;">
-          <h2 style="color:var(--text-primary); margin-bottom:15px;">النموذج مغلق </h2>
-          <p style="color:var(--text-secondary); font-size:1.1rem; line-height:1.6;">${closedReason}</p>
+      header.style.display = 'none';
+      const progressContainer = document.getElementById('fill-progress');
+      if (progressContainer && progressContainer.parentNode) {
+        progressContainer.parentNode.style.display = 'none';
+      }
+      
+      body.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height: 50vh; padding: 20px;">
+          <div style="text-align:center; padding: 40px 30px; width: 100%; max-width: 500px; background: var(--bg-card); border-radius: var(--radius-2xl); box-shadow: var(--shadow-lg); border: 1px solid var(--border);">
+            <div style="font-size: 4rem; margin-bottom: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">🔒</div>
+            <h2 style="color:var(--text-primary); font-size: 1.8rem; font-weight: 800; margin-bottom:15px; letter-spacing:-0.5px;">النموذج مغلق</h2>
+            <p style="color:var(--text-secondary); font-size:1.05rem; line-height:1.6; margin-bottom: 30px;">${closedReason}</p>
+            <button type="button" class="btn btn-secondary" style="padding: 10px 24px; font-weight: 600;" onclick="App.navigate('dashboard')">العودة للرئيسية</button>
+          </div>
         </div>
       `;
-      body.innerHTML = '';
       return;
     }
 
