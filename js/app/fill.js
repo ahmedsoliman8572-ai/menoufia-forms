@@ -98,8 +98,7 @@ Object.assign(window.App, {
           <div style="text-align:center; padding: 40px 30px; width: 100%; max-width: 500px; background: var(--bg-card); border-radius: var(--radius-2xl); box-shadow: var(--shadow-lg); border: 1px solid var(--border);">
             <div style="font-size: 4rem; margin-bottom: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">🔒</div>
             <h2 style="color:var(--text-primary); font-size: 1.8rem; font-weight: 800; margin-bottom:15px; letter-spacing:-0.5px;">النموذج مغلق</h2>
-            <p style="color:var(--text-secondary); font-size:1.05rem; line-height:1.6; margin-bottom: 30px;">${closedReason}</p>
-            <button type="button" class="btn btn-secondary" style="padding: 10px 24px; font-weight: 600;" onclick="App.navigate('dashboard')">العودة للرئيسية</button>
+            <p style="color:var(--text-secondary); font-size:1.05rem; line-height:1.6; margin-bottom: 10px;">${closedReason}</p>
           </div>
         </div>
       `;
