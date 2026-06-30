@@ -196,6 +196,6 @@
 @media (max-width: 768px) {
   .desktop-text { display: none !important; }
   .mobile-icon { display: inline-block !important; font-size: 1.2rem; }
-  .builder-toolbar-right .btn { padding: 8px !important; min-width: 40px; display: flex !important; justify-content: center; align-items: center; }
+  .builder-toolbar-right .btn { padding: 8px !important; min-width: 40px; display: flex; justify-content: center; align-items: center; }
   .builder-toolbar-right { gap: 4px !important; }
 }
