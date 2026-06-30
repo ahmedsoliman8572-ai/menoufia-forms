@@ -131,7 +131,7 @@
   
   .dash-header > div { flex-direction: column; align-items: stretch !important; gap: 10px; }
   .search-bar { width: 100%; min-width: 100%; }
-  #btn-new-form, #btn-contacts, #btn-insights { width: 100%; justify-content: center; }
+  #btn-new-form, #btn-contacts { width: 100%; justify-content: center; }
 
   .hero-title { font-size: 1.8rem; }
   .hero-desc { font-size: 0.95rem; }
