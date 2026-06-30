@@ -461,8 +461,9 @@ Object.assign(window.App, {
     if(idx !== -1) {
       this.state.forms[idx] = prevForm;
       this.save();
+      this.state.selectedFieldId = null;
       this.renderBuilder();
-      this.showToast('تم التراجع ↶', 'info');
+      this.showToast('تم التراجع', 'info');
     }
   },
 
@@ -483,8 +484,9 @@ Object.assign(window.App, {
     if(idx !== -1) {
       this.state.forms[idx] = nextForm;
       this.save();
+      this.state.selectedFieldId = null;
       this.renderBuilder();
-      this.showToast('تم الإعادة ↷', 'info');
+      this.showToast('تم الإعادة', 'info');
     }
   }
 
