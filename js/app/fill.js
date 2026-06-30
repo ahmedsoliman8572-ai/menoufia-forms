@@ -150,8 +150,8 @@ Object.assign(window.App, {
 
     let previewHtml = this.state.isPreviewMode ? `
       <div style="position:absolute; top:20px; right:20px; z-index:10;">
-        <button class="btn btn-primary" onclick="App.state.isPreviewMode = false; App.navigate('builder', {formId: App.state.currentFormId})" title="العودة للتعديل" style="display:flex; align-items:center; gap:5px; box-shadow:var(--shadow-md);">
-          <span>↩️</span>
+        <button onclick="App.state.isPreviewMode = false; App.navigate('builder', {formId: App.state.currentFormId})" title="العودة للتعديل" style="background: white; color: var(--primary); border: none; border-radius: 30px; padding: 8px 16px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display:flex; align-items:center; gap:6px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          <span style="font-size: 1.1rem; line-height: 1;">✏️</span>
           <span>العودة للتعديل</span>
         </button>
       </div>
