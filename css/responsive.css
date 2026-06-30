@@ -87,6 +87,11 @@
   .field-btn .icon { margin: 0; margin-left: 10px; }
 
   /* Builder settings as bottom sheet on mobile */
+
+  /* Make Fill Form full screen on mobile */
+  .fill-wrapper { margin: 0 auto; padding: 0; }
+  .fill-card { border-radius: 0; margin-bottom: 0; border-left: none; border-right: none; border-top: none; min-height: 100vh; display: flex; flex-direction: column; }
+  .fill-body { flex: 1; padding-bottom: 40px; }
 }
 
 /* Dim background when drawers or modals are open */
