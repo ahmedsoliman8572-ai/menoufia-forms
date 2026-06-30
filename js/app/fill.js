@@ -89,7 +89,7 @@ Object.assign(window.App, {
     if(isClosed) {
       header.innerHTML = `
         <div style="text-align:center; padding: 40px 20px;">
-          <h2 style="color:var(--text); margin-bottom:15px;">النموذج مغلق </h2>
+          <h2 style="color:var(--text-primary); margin-bottom:15px;">النموذج مغلق </h2>
           <p style="color:var(--text-secondary); font-size:1.1rem; line-height:1.6;">${closedReason}</p>
         </div>
       `;
@@ -453,7 +453,7 @@ Object.assign(window.App, {
       case 'payment':
         return `<div class="payment-mock-wrap" style="border:1px solid var(--border); padding:15px; border-radius:8px; background:var(--bg-card); box-shadow:0 2px 8px rgba(0,0,0,0.05);">
           <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span style="font-weight:bold; color:var(--text);">بطاقة ائتمان</span>
+            <span style="font-weight:bold; color:var(--text-primary);">بطاقة ائتمان</span>
             <span></span>
           </div>
           <input type="text" class="input-base" id="input-${field.id}-card" placeholder="رقم البطاقة (0000 0000 0000 0000)" style="margin-bottom:10px; font-family:monospace;">
