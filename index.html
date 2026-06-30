@@ -411,9 +411,16 @@
         <div class="toggle-row">
           <label style="font-weight:600">تفعيل وضع الاختبار (Quiz Mode)</label>
           <label class="toggle-switch">
-            <input type="checkbox" id="setting-quiz-mode" onchange="App.updateFormProp('isQuizMode', this.checked); App.renderSettings();">
+            <input type="checkbox" id="setting-quiz-mode" onchange="App.updateFormProp('isQuizMode', this.checked); document.getElementById('quiz-time-settings').style.display = this.checked ? 'block' : 'none'; App.renderSettings();">
             <span class="toggle-slider"></span>
           </label>
+        </div>
+
+        <div id="quiz-time-settings" style="display:none; padding:15px; margin-top:10px; background:rgba(0,0,0,0.02); border-radius:8px; border:1px solid var(--border);">
+          <div class="form-group">
+            <label>وقت الاختبار بالدقائق (اتركه فارغاً لعدم وضع وقت)</label>
+            <input type="number" id="setting-quiz-time" class="form-control" placeholder="مثال: 30" min="1" oninput="App.updateFormProp('quizTimeLimit', this.value ? parseInt(this.value) : null)">
+          </div>
         </div>
 
         <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
