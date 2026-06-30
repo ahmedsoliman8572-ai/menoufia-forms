@@ -504,6 +504,12 @@ openFormSettings() {
     document.getElementById('setting-thank-you').value = form.thankYouMessage || 'شكراً لك، تم تسجيل ردك في قاعدة البيانات بنجاح.';
     document.getElementById('setting-redirect-url').value = form.redirectUrl || '';
     document.getElementById('setting-allow-resubmit').checked = form.allowResubmit !== false;
+    
+    // Quiz mode settings
+    document.getElementById('setting-quiz-mode').checked = form.isQuizMode || false;
+    document.getElementById('setting-quiz-time').value = form.quizTimeLimit || '';
+    const quizTimeSettings = document.getElementById('quiz-time-settings');
+    if (quizTimeSettings) quizTimeSettings.style.display = form.isQuizMode ? 'block' : 'none';
     document.getElementById('setting-max-responses').value = form.maxResponses || '';
     document.getElementById('setting-deadline').value = form.deadline || '';
     document.getElementById('setting-enable-ticketing').checked = form.enableTicketing || false;
