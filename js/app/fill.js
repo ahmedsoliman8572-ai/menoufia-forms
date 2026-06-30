@@ -167,6 +167,15 @@ Object.assign(window.App, {
       <div id="step-indicator" class="step-indicator" style="position:relative; z-index:2; margin-top:10px; font-weight:bold; color:var(--primary);"></div>
     `;
 
+    // Global Quiz Timer
+    if (form.isQuizMode && form.quizTimeLimit) {
+      document.getElementById('fill-header').innerHTML += `
+        <div id="global-quiz-timer" style="position:relative; z-index:2; margin-top:15px; background:var(--bg-glass-strong); border:2px solid rgba(255,255,255,0.3); border-radius:var(--radius-lg); padding:10px 20px; font-size:1.8rem; font-weight:bold; color:var(--text-primary); text-align:center; box-shadow:var(--shadow-md);">
+          --:--
+        </div>
+      `;
+    }
+
     let html = '';
 
     pages.forEach((pageFields, step) => {
@@ -1189,15 +1198,24 @@ Object.assign(window.App, {
 
   initTimers(form) {
     const timerFields = form.fields.filter(f => f.type === 'timer');
-    if(timerFields.length === 0) return;
+    const globalQuizTime = form.isQuizMode && form.quizTimeLimit ? parseFloat(form.quizTimeLimit) : null;
+    
+    if (timerFields.length === 0 && !globalQuizTime) return;
 
-    // Use the first timer found (multiple timers per form usually doesn't make sense)
-    const timerField = timerFields[0];
-    const displayEl = document.getElementById(`timer-${timerField.id}`);
+    let displayEl;
+    let totalMinutes;
+
+    if (globalQuizTime) {
+      displayEl = document.getElementById('global-quiz-timer');
+      totalMinutes = globalQuizTime;
+    } else {
+      const timerField = timerFields[0];
+      displayEl = document.getElementById(`timer-${timerField.id}`);
+      totalMinutes = parseFloat(timerField.placeholder || 15);
+    }
+
     if(!displayEl) return;
 
-    // Time in minutes
-    const totalMinutes = parseFloat(timerField.placeholder || 15);
     let secondsLeft = Math.floor(totalMinutes * 60);
 
     // Clear existing interval if any
