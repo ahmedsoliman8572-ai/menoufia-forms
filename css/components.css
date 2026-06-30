@@ -190,6 +190,7 @@ body.dark-mode, .dark-mode {
 }
 .toast span {
   display: flex; align-items: center; gap: 10px;
+  white-space: nowrap;
 }
 .toast.success { background: linear-gradient(135deg, #10B981, #059669); }
 .toast.error { background: linear-gradient(135deg, #EF4444, #DC2626); }
