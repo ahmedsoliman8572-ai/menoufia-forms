@@ -321,7 +321,7 @@ window.App = {
         resultBox.style.display = 'block';
         resultBox.style.background = 'var(--bg-card)';
         resultTitle.innerText = 'جاري التحقق...';
-        resultTitle.style.color = 'var(--text)';
+        resultTitle.style.color = 'var(--text-primary)';
         resultText.innerText = 'الرجاء الانتظار قليلاً';
 
         try {
