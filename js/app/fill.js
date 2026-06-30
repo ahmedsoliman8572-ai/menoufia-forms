@@ -1011,7 +1011,7 @@ Object.assign(window.App, {
         for (let key in payloadData) {
           const val = payloadData[key];
           if(!val || typeof val !== 'string') continue;
-          if (key.includes('الاسم') || key.toLowerCase().includes('name')) {
+          if (key.includes('الاسم') || key.includes('اسم') || key.toLowerCase().includes('name')) {
             if(!contactName) contactName = val;
           }
           if (key.includes('البريد') || key.toLowerCase().includes('email')) {
