@@ -2,13 +2,13 @@
 /* GLOBAL RESET & BASE                           */
 /* ============================================= */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: hidden; width: 100%; max-width: 100%; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: clip; width: 100%; max-width: 100%; }
 body {
   font-family: var(--font-family);
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.7;
-  overflow-x: hidden;
+  overflow-x: clip;
   width: 100%;
   max-width: 100%;
   position: relative;
