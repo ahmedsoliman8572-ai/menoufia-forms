@@ -149,9 +149,9 @@ Object.assign(window.App, {
     ` : '';
 
     let previewHtml = this.state.isPreviewMode ? `
-      <div style="position:absolute; top:20px; right:20px; z-index:10;">
-        <button onclick="App.state.isPreviewMode = false; App.navigate('builder', {formId: App.state.currentFormId})" title="العودة للتعديل" style="background: white; color: var(--primary); border: none; border-radius: 30px; padding: 8px 16px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display:flex; align-items:center; gap:6px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-          <span style="font-size: 1.1rem; line-height: 1;">✏️</span>
+      <div style="position:fixed; bottom:30px; left:30px; z-index:9999;">
+        <button onclick="App.state.isPreviewMode = false; App.navigate('builder', {formId: App.state.currentFormId})" title="العودة للتعديل" style="background: var(--primary); color: white; border: none; border-radius: 50px; padding: 12px 24px; font-weight: 800; font-size: 1rem; cursor: pointer; display:flex; align-items:center; gap:8px; box-shadow: 0 4px 20px rgba(99,102,241,0.4); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          <span style="font-size: 1.2rem; line-height: 1;">✏️</span>
           <span>العودة للتعديل</span>
         </button>
       </div>
