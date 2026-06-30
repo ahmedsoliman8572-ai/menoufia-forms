@@ -26,7 +26,7 @@ window.App = {
   async init() {
     this.applyTheme();
     this.initKeyboardShortcuts();
-    
+
     // Check Auth Status
     const { data: { session } } = await supabaseClient.auth.getSession();
     this.updateAuthState(session);
@@ -39,17 +39,17 @@ window.App = {
     const urlParams = new URLSearchParams(window.location.search);
     const fillId = urlParams.get('fill');
     const scannerId = urlParams.get('scanner');
-    if(fillId) {
+    if (fillId) {
       // Hide Landing page navbar completely when sharing specific form
       const navbar = document.getElementById('navbar');
-      if(navbar) navbar.style.display = 'none';
-      this.navigate('fill', {formId: fillId});
+      if (navbar) navbar.style.display = 'none';
+      this.navigate('fill', { formId: fillId });
     } else if (scannerId) {
       const navbar = document.getElementById('navbar');
-      if(navbar) navbar.style.display = 'none';
+      if (navbar) navbar.style.display = 'none';
       this.navigateScanner(scannerId);
     } else {
-      if(!this.state.currentUser) {
+      if (!this.state.currentUser) {
         this.renderDashboard();
       }
     }
@@ -65,7 +65,6 @@ window.App = {
     const newFormBtn = document.getElementById('btn-new-form');
     const adminPanelBtn = document.getElementById('nav-admin-panel-btn');
     const btnContacts = document.getElementById('btn-contacts');
-    const btnInsights = document.getElementById('btn-insights');
 
     if (this.state.currentUser) {
       let isAuthorized = false;
@@ -73,7 +72,7 @@ window.App = {
       // Fetch user role
       try {
         const { data, error } = await supabaseClient.from('allowed_creators').select('role').eq('email', this.state.currentUser.email).single();
-        
+
         if (error || !data) {
           // User not found in allowed_creators, set them as pending
           await supabaseClient.from('allowed_creators').insert([{ email: this.state.currentUser.email, role: 'pending' }]);
@@ -92,7 +91,7 @@ window.App = {
           this.state.userRole = data.role;
           isAuthorized = true;
         }
-      } catch(e) { 
+      } catch (e) {
         console.error("Error fetching role", e);
         await supabaseClient.auth.signOut();
         this.state.currentUser = null;
@@ -102,28 +101,26 @@ window.App = {
 
       if (isAuthorized) {
         await this.loadRolePermissions();
-        if(loginBtn) loginBtn.style.display = 'none';
-        if(userInfo) userInfo.style.display = 'flex';
-        if(userEmail) userEmail.innerText = this.state.currentUser.email;
-        if(newFormBtn) newFormBtn.style.display = this.hasPermission('create') ? 'inline-flex' : 'none';
-        if(adminPanelBtn) adminPanelBtn.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-block' : 'none';
-        if(btnContacts) btnContacts.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-flex' : 'none';
-        if(btnInsights) btnInsights.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-flex' : 'none';
-        
-        if(this.state.currentView === 'dashboard') {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (userInfo) userInfo.style.display = 'flex';
+        if (userEmail) userEmail.innerText = this.state.currentUser.email;
+        if (newFormBtn) newFormBtn.style.display = this.hasPermission('create') ? 'inline-flex' : 'none';
+        if (adminPanelBtn) adminPanelBtn.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-block' : 'none';
+        if (btnContacts) btnContacts.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-flex' : 'none';
+
+        if (this.state.currentView === 'dashboard') {
           this.loadForms();
         }
       }
     } else {
-      if(loginBtn) loginBtn.style.display = 'inline-block';
-      if(userInfo) userInfo.style.display = 'none';
-      if(userEmail) userEmail.innerText = '';
-      if(newFormBtn) newFormBtn.style.display = 'none';
-      if(adminPanelBtn) adminPanelBtn.style.display = 'none';
-      if(btnContacts) btnContacts.style.display = 'none';
-      if(btnInsights) btnInsights.style.display = 'none';
+      if (loginBtn) loginBtn.style.display = 'inline-block';
+      if (userInfo) userInfo.style.display = 'none';
+      if (userEmail) userEmail.innerText = '';
+      if (newFormBtn) newFormBtn.style.display = 'none';
+      if (adminPanelBtn) adminPanelBtn.style.display = 'none';
+      if (btnContacts) btnContacts.style.display = 'none';
       this.state.forms = [];
-      if(this.state.currentView !== 'fill' && this.state.currentView !== 'scanner') {
+      if (this.state.currentView !== 'fill' && this.state.currentView !== 'scanner') {
         this.navigate('dashboard');
       }
     }
@@ -135,27 +132,27 @@ window.App = {
 
   async loginWithGoogle() {
     try {
-      const { error } = await supabaseClient.auth.signInWithOAuth({ 
+      const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: window.location.origin
         }
       });
       if (error) throw error;
-    } catch(err) {
-      if(this.showToast) this.showToast(err.message, 'error');
+    } catch (err) {
+      if (this.showToast) this.showToast(err.message, 'error');
     }
   },
 
   async loginWithEmail() {
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
-    if(!email || !password) return this.showToast('يرجى إدخال البريد وكلمة المرور', 'warning');
-    
+    if (!email || !password) return this.showToast('يرجى إدخال البريد وكلمة المرور', 'warning');
+
     try {
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
-        if(error.message.includes('Invalid login credentials')) {
+        if (error.message.includes('Invalid login credentials')) {
           this.showToast('بيانات الدخول غير صحيحة', 'error');
         } else {
           this.showToast(error.message, 'error');
@@ -164,7 +161,7 @@ window.App = {
         document.getElementById('auth-modal').style.display = 'none';
         this.showToast('تم تسجيل الدخول بنجاح', 'success');
       }
-    } catch(err) {
+    } catch (err) {
       this.showToast('حدث خطأ أثناء الاتصال', 'error');
     }
   },
@@ -172,13 +169,13 @@ window.App = {
   async signUpWithEmail() {
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
-    if(!email || !password) return this.showToast('يرجى إدخال البريد وكلمة المرور', 'warning');
-    if(password.length < 6) return this.showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'warning');
-    
+    if (!email || !password) return this.showToast('يرجى إدخال البريد وكلمة المرور', 'warning');
+    if (password.length < 6) return this.showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'warning');
+
     try {
       const { data, error } = await supabaseClient.auth.signUp({ email, password });
       if (error) {
-        if(error.message.includes('User already registered')) {
+        if (error.message.includes('User already registered')) {
           this.showToast('هذا البريد مسجل بالفعل، يرجى تسجيل الدخول', 'error');
         } else {
           this.showToast(error.message, 'error');
@@ -192,7 +189,7 @@ window.App = {
           this.showToast('تم التسجيل بنجاح! تم إرسال طلبك للإدارة، يرجى الانتظار لحين الموافقة لتتمكن من الدخول.', 'success');
         }
       }
-    } catch(err) {
+    } catch (err) {
       this.showToast('حدث خطأ أثناء الاتصال', 'error');
     }
   },
@@ -203,18 +200,18 @@ window.App = {
   },
 
   async loadForms() {
-    if(!this.state.currentUser) return;
+    if (!this.state.currentUser) return;
     try {
       const { data, error } = await supabaseClient.from('forms').select('*').order('updated_at', { ascending: false });
       if (error) throw error;
       data.forEach(f => {
-        if(f.settings) Object.assign(f, f.settings);
+        if (f.settings) Object.assign(f, f.settings);
       });
       this.state.forms = data;
       this.renderDashboard();
-    } catch(err) {
+    } catch (err) {
       console.error(err);
-      if(this.showToast) this.showToast('حدث خطأ أثناء جلب النماذج', 'error');
+      if (this.showToast) this.showToast('حدث خطأ أثناء جلب النماذج', 'error');
     }
   },
 
@@ -225,17 +222,17 @@ window.App = {
       const { data, error } = await supabaseClient.storage
         .from('uploads')
         .upload(fileName, file, { upsert: false });
-      
+
       if (error) throw error;
-      
+
       const { data: publicUrlData } = supabaseClient.storage
         .from('uploads')
         .getPublicUrl(fileName);
-        
+
       return publicUrlData.publicUrl;
     } catch (e) {
       console.error("Storage upload error:", e);
-      if(this.showToast) this.showToast('حدث خطأ أثناء رفع الملف', 'error');
+      if (this.showToast) this.showToast('حدث خطأ أثناء رفع الملف', 'error');
       return null;
     }
   },
@@ -247,41 +244,40 @@ window.App = {
   async navigate(view, params = {}) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     this.state.currentView = view;
-    if(params.formId) this.state.currentFormId = params.formId;
-    
+    if (params.formId) this.state.currentFormId = params.formId;
+
     document.getElementById(`page-${view}`).classList.add('active');
-    
-    if(view === 'dashboard') this.renderDashboard();
-    if(view === 'builder') { 
+
+    if (view === 'dashboard') this.renderDashboard();
+    if (view === 'builder') {
       if (!this.hasPermission('edit')) {
         this.showToast('عفواً، لا تملك صلاحية تعديل النماذج', 'error');
         this.state.currentView = 'dashboard';
         document.getElementById(`page-dashboard`).classList.add('active');
         return;
       }
-      this.state.selectedFieldId = null; 
+      this.state.selectedFieldId = null;
       const form = this.getForm();
-      if(form && !form.fields) {
+      if (form && !form.fields) {
         // Fetch full form data (fields, images) if not loaded
         const fullForm = await this.fetchFormFromCloud(form.id);
-        if(fullForm) {
+        if (fullForm) {
           Object.assign(form, fullForm);
         }
       }
-      this.renderBuilder(); 
+      this.renderBuilder();
     }
-    if(view === 'fill') this.renderFillForm();
-    if(view === 'responses') this.renderResponses();
-    if(view === 'admin') this.renderAdmin();
-    if(view === 'contacts') this.loadContacts();
-    if(view === 'insights') this.loadInsights();
-    window.scrollTo(0,0);
+    if (view === 'fill') this.renderFillForm();
+    if (view === 'responses') this.renderResponses();
+    if (view === 'admin') this.renderAdmin();
+    if (view === 'contacts') this.loadContacts();
+    window.scrollTo(0, 0);
 
     // Close mobile menu
     const mobileMenu = document.querySelector('.nav-links');
     const menuBtn = document.querySelector('.mobile-menu-btn');
-    if(mobileMenu) mobileMenu.classList.remove('mobile-open');
-    if(menuBtn) menuBtn.classList.remove('active');
+    if (mobileMenu) mobileMenu.classList.remove('mobile-open');
+    if (menuBtn) menuBtn.classList.remove('active');
   },
 
   async navigateScanner(formId) {
@@ -289,20 +285,20 @@ window.App = {
     this.state.currentView = 'scanner';
     this.state.currentFormId = formId;
     document.getElementById('page-scanner').classList.add('active');
-    
+
     // Hide navbar for scanner mode
     const navbar = document.getElementById('navbar');
-    if(navbar) navbar.style.display = 'none';
+    if (navbar) navbar.style.display = 'none';
 
     // Initialize Scanner
     if (!this._html5QrcodeScanner) {
-      this._html5QrcodeScanner = new Html5QrcodeScanner("scanner-reader", { fps: 10, qrbox: {width: 250, height: 250} }, /* verbose= */ false);
-      
+      this._html5QrcodeScanner = new Html5QrcodeScanner("scanner-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, /* verbose= */ false);
+
       this._html5QrcodeScanner.render(async (decodedText, decodedResult) => {
         // Prevent double scans
-        if(this._isScanningTicket) return;
+        if (this._isScanningTicket) return;
         this._isScanningTicket = true;
-        
+
         // Pause scanning to show result
         this._html5QrcodeScanner.pause(true);
 
@@ -321,8 +317,8 @@ window.App = {
             p_ticket_id: decodedText,
             p_form_id: formId
           });
-          
-          if(error) {
+
+          if (error) {
             if (error.message.includes('invalid_ticket')) {
               throw new Error('التذكرة غير صحيحة أو لا تنتمي لهذه الفعالية');
             } else if (error.message.includes('already_used')) {
@@ -350,7 +346,7 @@ window.App = {
           resultTitle.innerText = 'تم تسجيل الحضور بنجاح ✅';
           resultText.innerText = `أهلاً بك: ${guestName}`;
 
-        } catch(err) {
+        } catch (err) {
           resultBox.style.background = 'rgba(239, 68, 68, 0.1)';
           resultTitle.style.color = 'var(--danger)';
           resultTitle.innerText = 'خطأ في التذكرة ❌';
@@ -370,7 +366,7 @@ window.App = {
     }
   },
 
-    toggleTheme() {
+  toggleTheme() {
     this.state.settings.theme = this.state.settings.theme === 'dark' ? 'light' : 'dark';
     this.applyTheme();
     this.save();
@@ -381,10 +377,10 @@ window.App = {
     document.getElementById('theme-toggle').innerText = this.state.settings.theme === 'dark' ? '☀️' : '🌙';
   },
 
-    toggleMobileMenu() {
+  toggleMobileMenu() {
     const mobileMenu = document.querySelector('.nav-links');
     const menuBtn = document.querySelector('.mobile-menu-btn');
-    if(mobileMenu && menuBtn) {
+    if (mobileMenu && menuBtn) {
       mobileMenu.classList.toggle('mobile-open');
       menuBtn.classList.toggle('active');
     }
@@ -393,39 +389,39 @@ window.App = {
   toggleMobileSidebar() {
     const sidebar = document.getElementById('builder-sidebar');
     const overlay = document.getElementById('drawer-overlay');
-    if(sidebar) sidebar.classList.toggle('open');
-    if(overlay) overlay.classList.toggle('show');
+    if (sidebar) sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('show');
   },
 
   closeAllDrawers() {
     const sidebar = document.getElementById('builder-sidebar');
     const settings = document.getElementById('builder-settings');
     const overlay = document.getElementById('drawer-overlay');
-    if(sidebar) sidebar.classList.remove('open');
-    if(settings) settings.classList.remove('open');
-    if(overlay) overlay.classList.remove('show');
+    if (sidebar) sidebar.classList.remove('open');
+    if (settings) settings.classList.remove('open');
+    if (overlay) overlay.classList.remove('show');
   },
 
-    initKeyboardShortcuts() {
+  initKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
       // Only in builder view
-      if(this.state.currentView !== 'builder') return;
-      
-      if((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+      if (this.state.currentView !== 'builder') return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         this.undo();
       }
-      if((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
         e.preventDefault();
         this.redo();
       }
-      if((e.ctrlKey || e.metaKey) && e.key === 's') {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         this.saveCurrentForm();
       }
-      if(e.key === 'Delete' && this.state.selectedFieldId) {
+      if (e.key === 'Delete' && this.state.selectedFieldId) {
         // Only if not focused on an input
-        if(!['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+        if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
           e.preventDefault();
           this.removeField(this.state.selectedFieldId);
         }
@@ -435,19 +431,19 @@ window.App = {
 };
 
 Object.assign(window.App, {
-  showToast(msg, type='info') {
+  showToast(msg, type = 'info') {
     const c = document.getElementById('toast-container');
-    
+
     // Prevent duplicate exact messages showing at the same time
     const existingToasts = Array.from(c.querySelectorAll('.toast span'));
     if (existingToasts.some(span => span.innerText.includes(msg))) {
-      return; 
+      return;
     }
 
     const t = document.createElement('div');
     t.className = `toast ${type}`;
     t.innerHTML = `
-      <span>${type==='success'?'':type==='error'?'':'ℹ️'} ${msg}</span>
+      <span>${type === 'success' ? '' : type === 'error' ? '' : 'ℹ️'} ${msg}</span>
       <div class="toast-progress"><div class="toast-progress-bar"></div></div>
     `;
     c.appendChild(t);
@@ -458,16 +454,16 @@ Object.assign(window.App, {
       setTimeout(() => t.remove(), 300);
     }, 3500);
   },
-  
+
   closeModal() { document.getElementById('modal-overlay').classList.remove('active'); },
-  escape(s) { 
-    if(!s) return ''; 
+  escape(s) {
+    if (!s) return '';
     if (window.DOMPurify) {
       return DOMPurify.sanitize(String(s), { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
     }
-    const d = document.createElement('div'); d.innerText = String(s); return d.innerHTML; 
+    const d = document.createElement('div'); d.innerText = String(s); return d.innerHTML;
   },
-  
+
   loadScript(src) {
     return new Promise((resolve, reject) => {
       if (document.querySelector(`script[src="${src}"]`)) return resolve();
@@ -487,11 +483,11 @@ Object.assign(window.App, {
       const { data, error } = await supabaseClient.from('forms').select('*').eq('id', formId).single();
       if (error) throw error;
       if (data) {
-        if(data.settings) Object.assign(data, data.settings);
+        if (data.settings) Object.assign(data, data.settings);
         return data;
       }
       return null;
-    } catch(e) {
+    } catch (e) {
       console.error('Failed to fetch form from cloud:', e);
       return null;
     }
@@ -504,8 +500,8 @@ Object.assign(window.App, {
     const container = document.createElement('div');
     container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:99999;overflow:hidden;';
     document.body.appendChild(container);
-    
-    for(let i = 0; i < 60; i++) {
+
+    for (let i = 0; i < 60; i++) {
       const confetti = document.createElement('div');
       const size = Math.random() * 10 + 5;
       const color = colors[Math.floor(Math.random() * colors.length)];
@@ -513,17 +509,17 @@ Object.assign(window.App, {
       const delay = Math.random() * 2;
       const duration = Math.random() * 2 + 2;
       const shape = Math.random() > 0.5 ? '50%' : '0';
-      
+
       confetti.style.cssText = `
         position:absolute; top:-20px; left:${left}%;
         width:${size}px; height:${size}px;
         background:${color}; border-radius:${shape};
         animation:confetti-fall ${duration}s ease-in ${delay}s forwards;
-        transform:rotate(${Math.random()*360}deg);
+        transform:rotate(${Math.random() * 360}deg);
       `;
       container.appendChild(confetti);
     }
-    
+
     setTimeout(() => container.remove(), 5000);
   },
 
@@ -533,7 +529,7 @@ Object.assign(window.App, {
       const msgEl = document.getElementById('confirm-modal-message');
       const btnOk = document.getElementById('confirm-modal-ok');
       const btnCancel = document.getElementById('confirm-modal-cancel');
-      
+
       if (!modal) return resolve(window.confirm(message)); // Fallback
 
       msgEl.innerText = message;
@@ -559,7 +555,7 @@ Object.assign(window.App, {
       if (data && data.settings && data.settings.rolePermissions) {
         this.state.rolePermissions = data.settings.rolePermissions;
       }
-    } catch(e) {}
+    } catch (e) { }
   },
 
   hasPermission(action) {
@@ -567,5 +563,5 @@ Object.assign(window.App, {
     const perms = this.state.rolePermissions[this.state.userRole];
     return perms ? perms[action] : false;
   }
-  
+
 });
