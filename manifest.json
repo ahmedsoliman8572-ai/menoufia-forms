@@ -1,6 +1,6 @@
 {
-  "name": "Menoufia Forms",
-  "short_name": "M-Forms",
+  "name": "Forms",
+  "short_name": "Forms",
   "description": "منصة ذكية لإنشاء النماذج وجمع البيانات",
   "start_url": "./index.html",
   "display": "standalone",
