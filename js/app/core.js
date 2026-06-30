@@ -464,7 +464,7 @@ Object.assign(window.App, {
       t.style.opacity = '0';
       t.style.transform = 'translateY(-10px) scale(0.95)';
       setTimeout(() => t.remove(), 300);
-    }, 3500);
+    }, 2000);
   },
 
   closeModal() { document.getElementById('modal-overlay').classList.remove('active'); },
