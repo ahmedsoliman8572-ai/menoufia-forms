@@ -120,7 +120,7 @@ Object.assign(window.App, {
         <tr>
           <td style="padding:10px; border:1px solid var(--border); direction:ltr; text-align:right;">${this.escape(creator.email)}</td>
           <td style="padding:10px; border:1px solid var(--border);">
-            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'owner' ? '#8b5cf6' : creator.role === 'super_admin' ? 'var(--primary)' : creator.role === 'pending' ? 'var(--warning)' : 'var(--bg-secondary)'}; color: ${creator.role === 'owner' || creator.role === 'super_admin' || creator.role === 'pending' ? '#fff' : 'var(--text)'};">
+            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'owner' ? '#8b5cf6' : creator.role === 'super_admin' ? 'var(--primary)' : creator.role === 'pending' ? 'var(--warning)' : 'var(--bg-secondary)'}; color: ${creator.role === 'owner' || creator.role === 'super_admin' || creator.role === 'pending' ? '#fff' : 'var(--text-primary)'};">
               ${creator.role === 'owner' ? 'المالك' : creator.role === 'super_admin' ? 'مدير عام' : creator.role === 'pending' ? 'في الانتظار' : 'مدير عادي'}
             </span>
           </td>
