@@ -258,6 +258,12 @@ window.App = {
     }
     this.state.currentParams = params;
     
+    // Ensure all modals and drawers are closed when navigating
+    if (typeof this.closeAllDrawers === 'function') this.closeAllDrawers();
+    if (typeof this.closeModal === 'function') this.closeModal();
+    const authModal = document.getElementById('auth-modal');
+    if (authModal) authModal.style.display = 'none';
+    
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     this.state.currentView = view;
     if (params.formId) this.state.currentFormId = params.formId;
