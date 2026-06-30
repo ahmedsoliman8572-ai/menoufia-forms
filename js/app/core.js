@@ -355,10 +355,9 @@ window.App = {
             }
           }
 
-          // Success - Extract Name for greeting
           let guestName = 'زائر';
           for (let key in data) {
-            if (key.includes('الاسم') || key.toLowerCase().includes('name')) {
+            if (key.includes('اسم') || key.toLowerCase().includes('name')) {
               guestName = data[key]; break;
             }
           }
