@@ -455,7 +455,7 @@ Object.assign(window.App, {
     const t = document.createElement('div');
     t.className = `toast ${type}`;
     t.innerHTML = `
-      <span>${type === 'success' ? '' : type === 'error' ? '' : 'ℹ️'} ${msg}</span>
+      <span>${msg}</span>
       <div class="toast-progress"><div class="toast-progress-bar"></div></div>
     `;
     c.appendChild(t);
