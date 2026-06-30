@@ -39,7 +39,7 @@ Object.assign(window.App, {
         </div>
         <div style="text-align:center; padding:60px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:2px dashed var(--border); margin-top:20px; animation: fadeIn 0.5s;">
           <div style="font-size:4rem; margin-bottom:15px; display:inline-block; animation: float 3s ease-in-out infinite;"></div>
-          <h3 style="margin-bottom:10px; color:var(--text); font-size:1.5rem;">ليس لديك أي نماذج حتى الآن!</h3>
+          <h3 style="margin-bottom:10px; color:var(--text-primary); font-size:1.5rem;">ليس لديك أي نماذج حتى الآن!</h3>
           <p style="color:var(--text-secondary); margin-bottom:25px; max-width:400px; margin-left:auto; margin-right:auto; line-height:1.6;">قم بإنشاء أول نموذج لك الآن لبدء جمع البيانات والردود بكل سهولة واحترافية.</p>
           <button class="btn btn-primary" onclick="App.createBlankForm()" style="padding:12px 24px; font-size:1.1rem; box-shadow:0 4px 15px rgba(79,70,229,0.3); border-radius:30px;">
             <span style="margin-left:8px;"></span> إنشاء نموذج جديد
