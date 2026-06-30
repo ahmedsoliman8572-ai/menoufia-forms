@@ -134,6 +134,8 @@ Object.assign(window.App, {
       html += `
         <div class="builder-field-card ${isSelected}" data-field-id="${field.id}" onclick="App.selectField('${field.id}')">
           <div class="field-actions">
+            ${index > 0 ? `<button onclick="event.stopPropagation(); App.reorderFields(${index}, ${index - 1})" title="تحريك للأعلى">⬆️</button>` : ''}
+            ${index < form.fields.length - 1 ? `<button onclick="event.stopPropagation(); App.reorderFields(${index}, ${index + 1})" title="تحريك للأسفل">⬇️</button>` : ''}
             <button onclick="event.stopPropagation(); App.openSettingsModal('${field.id}')" title="إعدادات">⚙️</button>
             <button onclick="event.stopPropagation(); App.duplicateField('${field.id}')" title="نسخ">📋</button>
             <button class="del" onclick="event.stopPropagation(); App.removeField('${field.id}')" title="حذف">🗑️</button>
