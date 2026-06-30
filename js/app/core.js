@@ -252,8 +252,12 @@ window.App = {
 
   async navigate(view, params = {}, pushHistory = true) {
     if (pushHistory) {
-      window.history.pushState({ view, params }, '', window.location.search);
+      if (this.state.currentView !== view || JSON.stringify(this.state.currentParams || {}) !== JSON.stringify(params)) {
+        window.history.pushState({ view, params }, '', window.location.search);
+      }
     }
+    this.state.currentParams = params;
+    
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     this.state.currentView = view;
     if (params.formId) this.state.currentFormId = params.formId;
