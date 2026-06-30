@@ -261,15 +261,16 @@
   overflow-y: auto; padding: var(--space-xl); position: relative;
 }
 .builder-settings {
-  width: 320px; background: var(--bg-secondary);
-  border-right: 1px solid var(--border); overflow-y: auto;
-  transform: translateX(-100%); transition: transform 0.35s var(--ease-out);
-  position: absolute; left: 0; top: 0;
-  height: 100%; z-index: 20;
+  width: 400px; max-width: 90vw; background: var(--bg-card);
+  border-radius: var(--radius-lg); overflow-y: auto;
+  position: fixed; left: 0; right: 0; top: 0; bottom: 0; margin: auto;
+  height: fit-content; max-height: 85vh; z-index: 105;
   box-shadow: var(--shadow-xl);
+  opacity: 0; visibility: hidden; transform: scale(0.95);
+  transition: all 0.25s var(--ease-spring);
 }
-[dir="ltr"] .builder-settings { border-right: none; border-left: 1px solid var(--border); left: auto; right: 0; transform: translateX(100%); }
-.builder-settings.open { transform: translateX(0); }
+[dir="ltr"] .builder-settings { border: none; left: 0; right: 0; transform: scale(0.95); }
+.builder-settings.open { opacity: 1; visibility: visible; transform: scale(1); }
 
 .builder-toolbar {
   position: sticky;
