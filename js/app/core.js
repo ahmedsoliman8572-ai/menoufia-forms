@@ -35,6 +35,15 @@ window.App = {
       this.updateAuthState(session);
     });
 
+    // Handle browser back button
+    window.addEventListener('popstate', (event) => {
+      if (event.state && event.state.view) {
+        this.navigate(event.state.view, event.state.params, false);
+      } else {
+        this.navigate('dashboard', {}, false);
+      }
+    });
+
     // Check for share link
     const urlParams = new URLSearchParams(window.location.search);
     const fillId = urlParams.get('fill');
@@ -241,7 +250,10 @@ window.App = {
     // Backward compatibility for methods that call App.save() to save theme
   },
 
-  async navigate(view, params = {}) {
+  async navigate(view, params = {}, pushHistory = true) {
+    if (pushHistory) {
+      window.history.pushState({ view, params }, '', window.location.search);
+    }
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     this.state.currentView = view;
     if (params.formId) this.state.currentFormId = params.formId;
