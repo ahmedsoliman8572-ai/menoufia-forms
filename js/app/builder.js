@@ -410,7 +410,36 @@ Object.assign(window.App, {
     reader.readAsText(file);
   },
 
-  async saveCurrentForm() {
+  autoSaveTimer: null,
+  
+  triggerAutoSave() {
+    if(this.autoSaveTimer) clearTimeout(this.autoSaveTimer);
+    
+    const saveBtn = document.getElementById('btn-save');
+    // Store original innerHTML only if not currently auto-saving to prevent overwriting with the 'saving' state
+    if(saveBtn && !saveBtn.dataset.originalHtml) {
+      saveBtn.dataset.originalHtml = saveBtn.innerHTML;
+    }
+    
+    if(saveBtn) {
+       saveBtn.innerHTML = '<span class="desktop-text">جاري الحفظ...</span><span class="mobile-icon">⏳</span>';
+       saveBtn.style.opacity = '0.7';
+       saveBtn.style.pointerEvents = 'none';
+    }
+
+    this.autoSaveTimer = setTimeout(() => {
+      this.saveCurrentForm(true).finally(() => {
+        if(saveBtn) {
+          saveBtn.innerHTML = saveBtn.dataset.originalHtml || '<span class="desktop-text">حفظ</span><span class="mobile-icon">💾</span>';
+          saveBtn.style.opacity = '1';
+          saveBtn.style.pointerEvents = 'auto';
+          delete saveBtn.dataset.originalHtml;
+        }
+      });
+    }, 1500);
+  },
+
+  async saveCurrentForm(isAutoSave = false) {
     const form = this.getForm();
     if(!form) return;
     
@@ -430,7 +459,9 @@ Object.assign(window.App, {
       }).eq('id', form.id);
       
       if(error) throw error;
-      this.showToast('تم حفظ النموذج بنجاح ', 'success'); 
+      if(!isAutoSave) {
+        this.showToast('تم حفظ النموذج بنجاح ', 'success'); 
+      }
     } catch(err) {
       console.error(err);
       this.showToast('حدث خطأ أثناء الحفظ', 'error');
@@ -445,6 +476,8 @@ Object.assign(window.App, {
     this.state.history.redoStack = []; // Clear redo stack on new action
     // Keep stack size reasonable
     if(this.state.history.undoStack.length > 30) this.state.history.undoStack.shift();
+    
+    this.triggerAutoSave();
   },
 
   undo() {
@@ -464,6 +497,7 @@ Object.assign(window.App, {
     if(idx !== -1) {
       this.state.forms[idx] = prevForm;
       this.save();
+      this.triggerAutoSave();
       this.state.selectedFieldId = null;
       this.renderBuilder();
       this.showToast('تم التراجع', 'info');
@@ -487,6 +521,7 @@ Object.assign(window.App, {
     if(idx !== -1) {
       this.state.forms[idx] = nextForm;
       this.save();
+      this.triggerAutoSave();
       this.state.selectedFieldId = null;
       this.renderBuilder();
       this.showToast('تم الإعادة', 'info');
