@@ -5,6 +5,30 @@ const SUPABASE_URL = 'https://osqcqyqyzldufyxakviz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Qq_ol1DP_fsj5bZnXiHxUA_3FBUVhXW';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// =============================================
+// GLOBAL ERROR BOUNDARY
+// =============================================
+window.onerror = function(message, source, lineno, colno, error) {
+  const modal = document.getElementById('error-boundary-modal');
+  const details = document.getElementById('error-boundary-details');
+  if (modal && details) {
+    details.innerHTML = `<strong>Error:</strong> ${message}<br><strong>File:</strong> ${source}:${lineno}:${colno}`;
+    details.style.display = 'block';
+    modal.style.display = 'flex';
+  }
+  return false; // Let default console error also log
+};
+
+window.onunhandledrejection = function(event) {
+  const modal = document.getElementById('error-boundary-modal');
+  const details = document.getElementById('error-boundary-details');
+  if (modal && details) {
+    details.innerHTML = `<strong>Unhandled Promise Rejection:</strong> ${event.reason}`;
+    details.style.display = 'block';
+    modal.style.display = 'flex';
+  }
+};
+
 window.App = {
 
   state: {
