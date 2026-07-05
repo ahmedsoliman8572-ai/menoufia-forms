@@ -353,7 +353,7 @@
       <div style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
         <div class="search-bar" style="width: 100%; max-width: 400px; background: var(--bg-card);">
           <span>🔍</span>
-          <input type="text" id="responses-search-input" placeholder="ابحث في الردود (الاسم، البريد، التاريخ...)" oninput="App.filterResponses(this.value)" aria-label="البحث في الردود">
+          <input type="text" id="responses-search-input" placeholder="ابحث في الردود (الاسم، البريد، التاريخ...)" oninput="if(this.timer) clearTimeout(this.timer); this.timer = setTimeout(() => App.filterResponses(this.value), 250)" aria-label="البحث في الردود">
         </div>
       </div>
 
@@ -632,6 +632,21 @@
       <div style="display: flex; gap: 10px; justify-content: center;">
         <button class="btn btn-secondary" id="confirm-modal-cancel" style="min-width: 100px;">إلغاء</button>
         <button class="btn btn-primary" id="confirm-modal-ok" style="min-width: 100px; background: var(--error); border-color: var(--error);">نعم، متأكد</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- ERROR BOUNDARY MODAL           -->
+  <!-- ============================== -->
+  <div id="error-boundary-modal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.8); z-index:99999; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(10px);">
+    <div class="modal-content" style="background:var(--bg-card); width:100%; max-width:400px; border-radius:var(--radius-lg); box-shadow:var(--shadow-xl); padding:30px; text-align:center; border-top:4px solid var(--error);">
+      <div style="font-size:48px; margin-bottom:15px; animation:shake 0.5s ease;">⚠️</div>
+      <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size:1.4rem;">عذراً، حدث خطأ غير متوقع</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 25px; line-height: 1.6;">يبدو أن هناك خطأ ما تسبب في توقف التطبيق مؤقتاً. يرجى إعادة تحميل الصفحة للاستمرار.</p>
+      <div style="background:var(--bg-tertiary); padding:10px; border-radius:var(--radius-sm); font-size:0.8rem; color:var(--text-tertiary); margin-bottom:25px; text-align:left; direction:ltr; overflow-x:auto; display:none;" id="error-boundary-details"></div>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="btn btn-primary" onclick="window.location.reload()" style="min-width: 150px; font-weight:bold;">🔄 إعادة تحميل الصفحة</button>
       </div>
     </div>
   </div>
