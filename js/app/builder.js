@@ -180,12 +180,37 @@ Object.assign(window.App, {
         ${[1,2,3,4,5].map(n => `<div style="text-align:center; font-size:0.8rem;"><div class="circle"></div>${n}</div>`).join('')}
       </div>`;
     }
-    if(field.type === 'single_choice' || field.type === 'multiple_choice') {
-      const shape = field.type === 'single_choice' ? 'circle' : 'square';
-      return `<div class="fake-options">${(field.options||[]).map(o => `<div class="fake-option"><div class="${shape}"></div><span>${this.escape(o)}</span></div>`).join('')}</div>`;
-    }
-    if(field.type === 'dropdown' || ['governorate', 'markaz', 'faculty', 'academic_year'].includes(type)) {
-      return `<div class="fake-input" style="display:flex; justify-content:space-between;"><span>اختر...</span><span>▾</span></div>`;
+    if(field.type === 'single_choice' || field.type === 'multiple_choice' || field.type === 'dropdown') {
+      if (['governorate', 'markaz', 'faculty', 'academic_year'].includes(type)) {
+        return `<div class="fake-input" style="display:flex; justify-content:space-between;"><span>قائمة منسدلة ذكية (محددة مسبقاً)</span><span>▾</span></div>`;
+      }
+      const isSmart = FIELD_TYPES[type]?.category === 'smart';
+      const shape = field.type === 'single_choice' ? 'circle' : (field.type === 'multiple_choice' ? 'square' : 'dropdown-icon');
+      
+      let html = `<div class="fake-options" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">`;
+      (field.options||[]).forEach((o, i) => {
+        const shapeHtml = shape === 'dropdown-icon' ? `<span style="font-size:0.9rem; opacity:0.5; display:inline-block; width:16px; text-align:center;">${i+1}.</span>` : `<div class="${shape}"></div>`;
+        html += `
+          <div class="fake-option" style="display:flex; align-items:center; gap:8px; width:100%;">
+            ${shapeHtml}
+            <input type="text" class="field-label-edit" style="font-size:0.95rem; padding:4px 8px; font-weight:normal; flex:1;" 
+              value="${this.escape(o)}" 
+              onchange="App.updateOption('${field.id}', ${i}, this.value)"
+              ${isSmart ? 'readonly title="لا يمكن تعديل خيارات الحقل الذكي"' : ''}>
+            ${(!isSmart && field.options.length > 1) ? `<button class="icon-btn" style="width:28px;height:28px;font-size:0.8rem;opacity:0.6;" onclick="event.stopPropagation(); App.removeOption('${field.id}', ${i})" title="حذف الخيار">✕</button>` : ''}
+          </div>
+        `;
+      });
+      if (!isSmart) {
+        html += `
+          <div class="fake-option" style="display:flex; align-items:center; gap:8px; margin-top:4px; opacity:0.7; cursor:pointer;" onclick="event.stopPropagation(); App.addOption('${field.id}')">
+            ${shape === 'dropdown-icon' ? `<span style="font-size:0.9rem; display:inline-block; width:16px; text-align:center;">+</span>` : `<div class="${shape}"></div>`}
+            <span style="font-size:0.95rem; border-bottom:1px dashed var(--text-tertiary);">إضافة خيار جديد</span>
+          </div>
+        `;
+      }
+      html += `</div>`;
+      return html;
     }
     if(field.type === 'section_break') {
       return `<div style="text-align:center; padding:10px; border-top:2px dashed var(--border); color:var(--text-tertiary);">--- فاصل صفحة جديدة ---</div>`;
