@@ -456,10 +456,10 @@ viewResponses(formId) {
     
     let visibleCount = 0;
     rows.forEach(row => {
-      // Don't filter the empty state message
       if(row.querySelector('.empty-state')) return;
       
-      const text = row.innerText.toLowerCase();
+      // Use textContent instead of innerText for much better performance
+      const text = row.textContent.toLowerCase();
       if(!q || text.includes(q)) {
         row.style.display = '';
         visibleCount++;
