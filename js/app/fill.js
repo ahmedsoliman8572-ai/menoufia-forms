@@ -106,13 +106,19 @@ Object.assign(window.App, {
     }
 
     this.state.currentStep = 0;
+    this.state.pageHistory = [0];
 
     const pages = [[]];
+    const sectionBreaks = [];
     form.fields.forEach(f => {
-      if (f.type === 'section_break') pages.push([]);
+      if (f.type === 'section_break') {
+        pages.push([]);
+        sectionBreaks.push(f);
+      }
       else pages[pages.length - 1].push(f);
     });
     this.state.totalPages = pages.length;
+    this.state.sectionBreaks = sectionBreaks;
 
     // Apply Theme Color locally to page-fill
     const pageFill = document.getElementById('page-fill');
@@ -184,7 +190,7 @@ Object.assign(window.App, {
       `;
     }
 
-    let html = '';
+    let html = '<button type="submit" id="hidden-submit-btn" style="display:none;"></button>';
 
     pages.forEach((pageFields, step) => {
       html += `<div class="form-page ${step === 0 ? 'fade-in-up' : ''}" id="form-page-${step}" style="display: ${step === 0 ? 'block' : 'none'}">`;
@@ -281,8 +287,66 @@ Object.assign(window.App, {
 
   nextPage() {
     if(this.validateCurrentPage()) {
+      const form = this.getForm();
+      const pages = [[]];
+      const sectionBreaks = [];
+      form.fields.forEach(f => {
+        if (f.type === 'section_break') { pages.push([]); sectionBreaks.push(f); }
+        else pages[pages.length - 1].push(f);
+      });
+      
+      const currentFields = pages[this.state.currentStep];
+      let target = 'next';
+      
+      // 1. Check choice fields logic branching on current page
+      for (const field of currentFields) {
+        if (field.logicBranching && (field.type === 'single_choice' || field.type === 'dropdown')) {
+          const val = this.getVal(field);
+          if (val && field.options) {
+            const optIndex = field.options.indexOf(val);
+            if (optIndex !== -1 && field.optionTargets && field.optionTargets[optIndex]) {
+              target = field.optionTargets[optIndex];
+              break; // use the first matched branching field
+            }
+          }
+        }
+      }
+      
+      // 2. If no branch, check section_break nextAction
+      if (target === 'next' && sectionBreaks[this.state.currentStep]) {
+        const sb = sectionBreaks[this.state.currentStep];
+        if (sb.nextAction) {
+          target = sb.nextAction;
+        }
+      }
+      
+      // Handle navigation
+      if (target === 'submit') {
+        const submitBtn = document.getElementById('hidden-submit-btn') || document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.click();
+        else this.handleSubmit(new Event('submit'));
+        return;
+      }
+      
+      let nextStep = this.state.currentStep + 1;
+      if (target !== 'next') {
+        const targetIdx = sectionBreaks.findIndex(sb => sb.id === target);
+        if (targetIdx !== -1) {
+          nextStep = targetIdx + 1;
+        }
+      }
+      
+      if (nextStep >= pages.length) {
+        const submitBtn = document.getElementById('hidden-submit-btn') || document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.click();
+        else this.handleSubmit(new Event('submit'));
+        return;
+      }
+      
       document.getElementById(`form-page-${this.state.currentStep}`).style.display = 'none';
-      this.state.currentStep++;
+      this.state.currentStep = nextStep;
+      this.state.pageHistory.push(this.state.currentStep);
+      
       const next = document.getElementById(`form-page-${this.state.currentStep}`);
       next.style.display = 'block';
       next.classList.remove('fade-in-up');
@@ -294,15 +358,29 @@ Object.assign(window.App, {
   },
 
   prevPage() {
-    document.getElementById(`form-page-${this.state.currentStep}`).style.display = 'none';
-    this.state.currentStep--;
-    const prev = document.getElementById(`form-page-${this.state.currentStep}`);
-    prev.style.display = 'block';
-    prev.classList.remove('fade-in-up');
-    void prev.offsetWidth;
-    prev.classList.add('fade-in-up');
-    this.updatePageIndicator();
-    window.scrollTo(0,0);
+    if (this.state.pageHistory && this.state.pageHistory.length > 1) {
+      document.getElementById(`form-page-${this.state.currentStep}`).style.display = 'none';
+      this.state.pageHistory.pop(); // remove current
+      this.state.currentStep = this.state.pageHistory[this.state.pageHistory.length - 1]; // get previous
+      const prev = document.getElementById(`form-page-${this.state.currentStep}`);
+      prev.style.display = 'block';
+      prev.classList.remove('fade-in-up');
+      void prev.offsetWidth;
+      prev.classList.add('fade-in-up');
+      this.updatePageIndicator();
+      window.scrollTo(0,0);
+    } else {
+      document.getElementById(`form-page-${this.state.currentStep}`).style.display = 'none';
+      this.state.currentStep--;
+      if (this.state.currentStep < 0) this.state.currentStep = 0;
+      const prev = document.getElementById(`form-page-${this.state.currentStep}`);
+      prev.style.display = 'block';
+      prev.classList.remove('fade-in-up');
+      void prev.offsetWidth;
+      prev.classList.add('fade-in-up');
+      this.updatePageIndicator();
+      window.scrollTo(0,0);
+    }
   },
 
   validateCurrentPage() {
