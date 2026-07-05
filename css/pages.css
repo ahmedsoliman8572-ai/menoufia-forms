@@ -309,6 +309,9 @@
 .field-btn.smart-field:hover { background: rgba(99, 102, 241, 0.1); border-color: var(--primary); }
 
 /* Builder Canvas Items */
+/* Mobile Add Field FAB - hidden by default, shown on mobile via responsive.css */
+.mobile-fab { display: none; }
+
 .canvas-wrapper { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-md); padding-bottom: 100px; }
 .form-header-card {
   background: var(--bg-card); border-top: 5px solid var(--primary);
