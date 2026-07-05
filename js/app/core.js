@@ -214,6 +214,7 @@ window.App = {
 
   async loadForms() {
     if (!this.state.currentUser) return;
+    this.renderDashboard(true);
     try {
       const { data, error } = await supabaseClient.from('forms').select('*').order('updated_at', { ascending: false });
       if (error) throw error;
