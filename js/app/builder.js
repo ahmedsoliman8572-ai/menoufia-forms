@@ -395,9 +395,24 @@ Object.assign(window.App, {
     }
   },
   
-  selectField(id) { this.state.selectedFieldId = id; this.renderCanvas(); },
+  selectField(id) { 
+    if (this.state.selectedFieldId === id) return;
+    this.state.selectedFieldId = id; 
+    document.querySelectorAll('.builder-field-card').forEach(el => {
+      if (el.dataset.fieldId === id) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+    const panel = document.getElementById('builder-settings');
+    if (panel && panel.classList.contains('open')) {
+      this.renderSettings();
+    }
+  },
   openSettingsModal(id) { this.selectField(id); this.renderSettings(); },
-  closeSettings() { this.state.selectedFieldId = null; this.renderCanvas(); this.closeAllDrawers(); },
+  closeSettings() { 
+    this.state.selectedFieldId = null; 
+    document.querySelectorAll('.builder-field-card').forEach(el => el.classList.remove('selected'));
+    this.closeAllDrawers(); 
+  },
   removeField(id) { const f = this.getForm(); this.saveHistoryState(); f.fields = f.fields.filter(x => x.id !== id); this.closeSettings(); this.save(); this.renderCanvas(); },
   
   reorderFields(oldIndex, newIndex) {
