@@ -37,7 +37,7 @@ Object.assign(window.App, {
             <div style="display:flex; gap:20px; flex-wrap:wrap;">
               <!-- Admin Permissions -->
               <div style="flex:1; min-width:250px; background:var(--bg-secondary); padding:15px; border-radius:8px;">
-                <h4>صلاحيات الأدمن (Admin)</h4>
+                <h4>صلاحيات المدير (Admin)</h4>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
                   <span>إنشاء النماذج</span>
                   <label class="toggle-switch">
@@ -59,29 +59,10 @@ Object.assign(window.App, {
                     <span class="toggle-slider"></span>
                   </label>
                 </div>
-              </div>
-
-              <!-- Super Admin Permissions -->
-              <div style="flex:1; min-width:250px; background:var(--bg-secondary); padding:15px; border-radius:8px;">
-                <h4>صلاحيات السوبر أدمن (Super Admin)</h4>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
-                  <span>إنشاء النماذج</span>
+                  <span>رؤية كافة النماذج</span>
                   <label class="toggle-switch">
-                    <input type="checkbox" ${App.state.rolePermissions.super_admin.create ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'create', this.checked)">
-                    <span class="toggle-slider"></span>
-                  </label>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
-                  <span>تعديل النماذج</span>
-                  <label class="toggle-switch">
-                    <input type="checkbox" ${App.state.rolePermissions.super_admin.edit ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'edit', this.checked)">
-                    <span class="toggle-slider"></span>
-                  </label>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; width: 100%;">
-                  <span>حذف النماذج</span>
-                  <label class="toggle-switch">
-                    <input type="checkbox" ${App.state.rolePermissions.super_admin.delete ? 'checked' : ''} onchange="App.updateRolePermission('super_admin', 'delete', this.checked)">
+                    <input type="checkbox" ${App.state.rolePermissions.admin.view_all ? 'checked' : ''} onchange="App.updateRolePermission('admin', 'view_all', this.checked)">
                     <span class="toggle-slider"></span>
                   </label>
                 </div>
@@ -120,30 +101,20 @@ Object.assign(window.App, {
         <tr>
           <td style="padding:10px; border:1px solid var(--border); direction:ltr; text-align:right;">${this.escape(creator.email)}</td>
           <td style="padding:10px; border:1px solid var(--border);">
-            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'owner' ? '#8b5cf6' : creator.role === 'super_admin' ? 'var(--primary)' : creator.role === 'restricted_admin' ? 'var(--warning)' : creator.role === 'pending' ? '#f59e0b' : 'var(--bg-secondary)'}; color: ${creator.role === 'owner' || creator.role === 'super_admin' || creator.role === 'restricted_admin' || creator.role === 'pending' ? '#fff' : 'var(--text-primary)'};">
-              ${creator.role === 'owner' ? 'المالك' : creator.role === 'super_admin' ? 'مدير عام' : creator.role === 'restricted_admin' ? 'مدير مقيد' : creator.role === 'pending' ? 'في الانتظار' : 'مدير عادي'}
+            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'owner' ? '#8b5cf6' : creator.role === 'pending' ? '#f59e0b' : 'var(--bg-secondary)'}; color: ${creator.role === 'owner' || creator.role === 'pending' ? '#fff' : 'var(--text-primary)'};">
+              ${creator.role === 'owner' ? 'المالك' : creator.role === 'pending' ? 'في الانتظار' : 'مدير (Admin)'}
             </span>
           </td>
           <td style="padding:10px; border:1px solid var(--border); text-align:center;">
             <div style="display:flex; gap:6px; justify-content:center; flex-wrap:nowrap;">
             ${creator.email === App.state.currentUser.email 
-              ? (creator.role === 'super_admin' && !data.some(c => c.role === 'owner')
-                  ? `<button class="btn btn-primary btn-sm" style="background:#8b5cf6; padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'owner')">ترقية لنفسي لمالك</button>`
-                  : `<span style="color:var(--text-tertiary); font-size:0.8rem;">(أنت)</span>`) 
+              ? `<span style="color:var(--text-tertiary); font-size:0.8rem;">(أنت)</span>`
               : creator.role === 'pending'
                 ? `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.approveCreator('${creator.email}')">قبول</button>
                    <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}', true)">رفض</button>`
-                : App.state.userRole === 'owner' && creator.role !== 'owner'
-                  ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'super_admin')">عام</button>
-                     ${creator.role === 'admin' ? `<button class="btn btn-primary btn-sm" style="background:var(--warning); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'restricted_admin')">تقييد</button>` : `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'admin')">عادي</button>`}
-                     <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">حذف</button>`
-                  : (creator.role === 'admin' || creator.role === 'restricted_admin') && App.state.userRole === 'super_admin'
-                    ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'super_admin')">ترقية لعام</button>
-                       ${creator.role === 'admin' ? `<button class="btn btn-primary btn-sm" style="background:var(--warning); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'restricted_admin')">تقييد</button>` : `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'admin')">ترقية لعادي</button>`}
-                       <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">حذف</button>`
-                    : creator.role === 'super_admin' || creator.role === 'owner'
-                      ? `<span style="color:var(--text-tertiary); font-size:0.8rem;">لا يمكن التعديل</span>`
-                      : `<button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">حذف</button>`}
+                : creator.role === 'owner'
+                  ? `<span style="color:var(--text-tertiary); font-size:0.8rem;">لا يمكن التعديل</span>`
+                  : `<button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">حذف</button>`}
             </div>
           </td>
         </tr>
