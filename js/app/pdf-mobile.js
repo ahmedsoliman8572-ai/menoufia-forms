@@ -304,65 +304,23 @@
 
     const html = buildReportHTML(form, app);
 
-    // ── Strategy 1: Full-screen iframe with srcdoc ──
-    // srcdoc accepts a DOMString, so encoding is handled correctly
-    // This avoids all the charset issues with window.open + document.write
+    // ── Use the exact Blob URL method from responses.js ──
     try {
-      // Remove any existing PDF iframe
-      const existingIframe = document.getElementById('pdf-export-iframe');
-      if (existingIframe) existingIframe.remove();
-
-      const iframe = document.createElement('iframe');
-      iframe.id = 'pdf-export-iframe';
-      iframe.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; z-index:999999; border:none; background:#fff;';
-      iframe.srcdoc = html;
-      document.body.appendChild(iframe);
-
-      // Listen for close message from the iframe
-      function onMessage(e) {
-        if (e.data === 'close-pdf-iframe') {
-          iframe.remove();
-          window.removeEventListener('message', onMessage);
-        }
-      }
-      window.addEventListener('message', onMessage);
-
-      app.showToast('تم فتح تقرير التصدير', 'success');
-      return;
-    } catch (err1) {
-      console.warn('srcdoc approach failed:', err1);
-    }
-
-    // ── Strategy 2: Blob URL via anchor click ──
-    try {
-      const encoder = new TextEncoder();
-      const utf8Bytes = encoder.encode(html);
-      const blob = new Blob([utf8Bytes], { type: 'text/html;charset=UTF-8' });
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement('a');
       a.href = url;
       a.target = '_blank';
-      a.rel = 'noopener';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
 
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
       app.showToast('تم فتح نافذة التصدير', 'success');
-      return;
-    } catch (err2) {
-      console.warn('Blob URL approach failed:', err2);
-    }
-
-    // ── Strategy 3: data: URI (last resort) ──
-    try {
-      const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
-      window.open(dataUrl, '_blank');
-      app.showToast('تم فتح نافذة التصدير', 'success');
-    } catch (err3) {
-      console.error('All export strategies failed:', err3);
-      app.showToast('حدث خطأ أثناء التصدير', 'error');
+    } catch (err) {
+      console.error(err);
+      app.showToast('حدث خطأ أثناء فتح النافذة', 'error');
     }
   }
 
