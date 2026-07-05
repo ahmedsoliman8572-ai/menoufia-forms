@@ -1,11 +1,12 @@
 // =============================================
-// MOBILE PDF EXPORT (jsPDF-based)
-// Generates a real .pdf file that downloads
-// directly — works reliably on all mobile browsers.
+// MOBILE PDF EXPORT (html2pdf.js-based)
+// Renders the report HTML through the browser's
+// engine (which handles Arabic perfectly) then
+// converts to a real downloadable .pdf file.
 // The desktop method (window.print) is NOT modified.
 //
 // This file wraps App.exportResponsesPDF so that
-// on mobile it routes to the jsPDF method instead.
+// on mobile it routes to the html2pdf method instead.
 // responses.js remains 100% untouched.
 // =============================================
 (function () {
@@ -21,8 +22,9 @@
   }
 
   /**
-   * Mobile-specific PDF export using jsPDF + AutoTable.
-   * Produces a real downloadable .pdf file with RTL Arabic support.
+   * Mobile-specific PDF export using html2pdf.js.
+   * Builds an HTML report, renders it through the browser
+   * (perfect Arabic support), then converts to a real PDF download.
    */
   async function exportResponsesPDFMobile() {
     const app = window.App;
@@ -34,105 +36,77 @@
 
     app.showToast('جاري إنشاء ملف PDF...', 'info');
 
-    // Lazy-load jsPDF + AutoTable
+    // Lazy-load html2pdf.js (bundles html2canvas + jsPDF internally)
     try {
-      if (typeof window.jspdf === 'undefined') {
-        await app.loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js');
-      }
-      if (typeof window.jspdf.jsPDF.API.autoTable === 'undefined') {
-        await app.loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js');
+      if (typeof window.html2pdf === 'undefined') {
+        await app.loadScript('https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js');
       }
     } catch (e) {
-      console.error('Failed to load jsPDF libraries:', e);
+      console.error('Failed to load html2pdf library:', e);
       app.showToast('فشل تحميل مكتبة PDF. تحقق من اتصال الإنترنت.', 'error');
       return;
     }
 
     try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      // ── Build the report HTML ──
+      const esc = (text) => app.escape ? app.escape(text) : String(text || '');
 
-      const safeText = (text) => {
-        if (!text) return '';
-        return String(text);
-      };
-
-      // ── Page dimensions ──
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 15;
-
-      // ── Header ──
-      doc.setFillColor(79, 70, 229); // #4f46e5
-      doc.rect(0, 0, pageWidth, 28, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(18);
-      doc.text(safeText(form.title), pageWidth / 2, 12, { align: 'center' });
-      doc.setFontSize(10);
-      const totalText = `${form.submissions.length} :إجمالي الردود`;
-      const dateText = `${new Date().toLocaleDateString('ar-EG')} :تاريخ التصدير`;
-      doc.text(totalText, pageWidth / 2 + 40, 22, { align: 'center' });
-      doc.text(dateText, pageWidth / 2 - 40, 22, { align: 'center' });
-
-      let startY = 35;
+      let reportHTML = `
+        <div style="direction:rtl; font-family:'Tajawal','Segoe UI',Arial,sans-serif; color:#1a1a2e; padding:20px; background:#fff;">
+          <!-- Header -->
+          <div style="text-align:center; margin-bottom:25px; padding-bottom:15px; border-bottom:3px solid #4f46e5;">
+            <h1 style="font-size:1.6rem; font-weight:800; color:#4f46e5; margin:0 0 8px 0;">${esc(form.title)}</h1>
+            <div style="font-size:0.85rem; color:#666;">
+              <span style="display:inline-block; margin:0 8px; padding:4px 12px; background:#f0f0ff; border-radius:20px; font-weight:700; color:#4f46e5;">إجمالي الردود: ${form.submissions.length}</span>
+              <span style="display:inline-block; margin:0 8px; padding:4px 12px; background:#f0f0ff; border-radius:20px; font-weight:700; color:#4f46e5;">تاريخ التصدير: ${new Date().toLocaleDateString('ar-EG')}</span>
+            </div>
+          </div>`;
 
       // ── Charts as images ──
       const canvases = document.getElementById('page-responses').querySelectorAll('canvas');
       if (canvases.length > 0) {
-        let chartX = margin;
-        const chartMaxWidth = (pageWidth - margin * 2 - 10) / 2; // 2 charts per row
-        const chartMaxHeight = 55;
-        let chartsInRow = 0;
-
+        reportHTML += `<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px;">`;
         canvases.forEach(canvas => {
           try {
             const imgData = canvas.toDataURL('image/png');
-            const ratio = Math.min(chartMaxWidth / canvas.width, chartMaxHeight / canvas.height);
-            const w = canvas.width * ratio;
-            const h = canvas.height * ratio;
-
-            if (chartsInRow >= 2) {
-              chartX = margin;
-              startY += chartMaxHeight + 8;
-              chartsInRow = 0;
-            }
-
-            if (startY + h > pageHeight - 20) {
-              doc.addPage();
-              startY = margin;
-            }
-
-            doc.addImage(imgData, 'PNG', chartX, startY, w, h);
-            chartX += chartMaxWidth + 10;
-            chartsInRow++;
-          } catch (e) {
-            console.warn('Could not export chart to PDF:', e);
-          }
+            reportHTML += `<img src="${imgData}" style="max-width:48%; max-height:200px; object-fit:contain; border:1px solid #eee; border-radius:8px;">`;
+          } catch (e) { }
         });
-
-        startY += chartMaxHeight + 12;
+        reportHTML += `</div>`;
       }
 
       // ── Table ──
-      const headers = ['#', 'تاريخ الإرسال'];
+      reportHTML += `
+        <table style="width:100%; border-collapse:collapse; font-size:0.75rem; margin-top:10px;">
+          <thead>
+            <tr>
+              <th style="background:#4f46e5; color:#fff; padding:8px 6px; font-weight:700; font-size:0.8rem; white-space:nowrap; border:1px solid #3730a3; text-align:center;">#</th>
+              <th style="background:#4f46e5; color:#fff; padding:8px 6px; font-weight:700; font-size:0.8rem; white-space:nowrap; border:1px solid #3730a3; text-align:center;">تاريخ الإرسال</th>`;
+
       if (form.enableTicketing) {
-        headers.push('الحضور');
+        reportHTML += `<th style="background:#4f46e5; color:#fff; padding:8px 6px; font-weight:700; font-size:0.8rem; white-space:nowrap; border:1px solid #3730a3; text-align:center;">الحضور</th>`;
       }
+
       form.fields.forEach(f => {
         if (f.type !== 'section_break') {
-          headers.push(f.label);
+          reportHTML += `<th style="background:#4f46e5; color:#fff; padding:8px 6px; font-weight:700; font-size:0.8rem; white-space:nowrap; border:1px solid #3730a3; text-align:center;">${esc(f.label)}</th>`;
         }
       });
 
-      const rows = [];
+      reportHTML += `</tr></thead><tbody>`;
+
       form.submissions.forEach((sub, idx) => {
-        const row = [];
-        row.push(String(idx + 1));
-        row.push(sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-');
+        const bgColor = idx % 2 === 0 ? '#fff' : '#f8fafc';
+        reportHTML += `<tr style="background:${bgColor};">`;
+        reportHTML += `<td style="padding:6px; border:1px solid #e2e8f0; text-align:center; font-weight:700; color:#4f46e5;">${idx + 1}</td>`;
+        reportHTML += `<td style="padding:6px; border:1px solid #e2e8f0; text-align:right; white-space:nowrap; font-size:0.7rem;">${sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-'}</td>`;
 
         if (form.enableTicketing) {
           const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
-          row.push(attended ? 'حضر ✅' : 'لم يحضر ⏳');
+          const badge = attended
+            ? `<span style="background:rgba(16,185,129,0.15); color:#059669; padding:2px 6px; border-radius:10px; font-size:0.7rem; font-weight:700;">✅ حضر</span>`
+            : `<span style="background:rgba(100,116,139,0.15); color:#64748b; padding:2px 6px; border-radius:10px; font-size:0.7rem; font-weight:700;">⏳ لم يحضر</span>`;
+          reportHTML += `<td style="padding:6px; border:1px solid #e2e8f0; text-align:center;">${badge}</td>`;
         }
 
         form.fields.forEach(f => {
@@ -141,77 +115,59 @@
             if (val === undefined || val === null) {
               val = '-';
             } else if ((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
-              val = '[صورة مرفقة]';
+              reportHTML += `<td style="padding:6px; border:1px solid #e2e8f0; text-align:center;"><img src="${val}" style="max-width:50px; max-height:50px; border-radius:4px;"></td>`;
+              return;
             } else if (Array.isArray(val)) {
               val = val.join('، ');
             }
-            row.push(String(val));
+            reportHTML += `<td style="padding:6px; border:1px solid #e2e8f0; text-align:right;">${esc(val)}</td>`;
           }
         });
-        rows.push(row);
+        reportHTML += `</tr>`;
       });
 
-      if (startY > pageHeight - 40) {
-        doc.addPage();
-        startY = margin;
-      }
+      reportHTML += `</tbody></table>`;
+      reportHTML += `<div style="margin-top:20px; text-align:center; font-size:0.65rem; color:#999; border-top:1px solid #eee; padding-top:10px;">تم إنشاء هذا التقرير بواسطة Menoufia Forms | ${new Date().toLocaleString('ar-EG')}</div>`;
+      reportHTML += `</div>`;
 
-      doc.autoTable({
-        head: [headers],
-        body: rows,
-        startY: startY,
-        margin: { left: margin, right: margin },
-        styles: {
-          font: 'helvetica',
-          fontSize: 8,
-          cellPadding: 3,
-          overflow: 'linebreak',
-          halign: 'right',
-          valign: 'middle',
-          lineColor: [226, 232, 240],
-          lineWidth: 0.3,
-        },
-        headStyles: {
-          fillColor: [79, 70, 229],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold',
-          fontSize: 9,
-          halign: 'center',
-        },
-        alternateRowStyles: {
-          fillColor: [248, 250, 252],
-        },
-        columnStyles: {
-          0: { halign: 'center', cellWidth: 12, fontStyle: 'bold', textColor: [79, 70, 229] },
-          1: { cellWidth: 35, halign: 'right', fontSize: 7 },
-        },
-        didDrawPage: function (data) {
-          doc.setFontSize(7);
-          doc.setTextColor(153, 153, 153);
-          const pageNum = doc.internal.getCurrentPageInfo().pageNumber;
-          const totalPages = doc.internal.getNumberOfPages();
-          doc.text(
-            `Menoufia Forms | ${pageNum} / ${totalPages}`,
-            pageWidth / 2, pageHeight - 8,
-            { align: 'center' }
-          );
-        },
-      });
+      // ── Create a hidden container for rendering ──
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '1100px'; // Wide enough for landscape-like rendering
+      container.style.background = '#fff';
+      container.style.zIndex = '-1';
+      container.innerHTML = reportHTML;
+      document.body.appendChild(container);
 
-      // ── Save / Download ──
+      // ── Generate PDF with html2pdf ──
       const fileName = `responses_${form.title.replace(/\s+/g, '_')}.pdf`;
-      const pdfBlob = doc.output('blob');
-      const url = URL.createObjectURL(pdfBlob);
 
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      await html2pdf()
+        .set({
+          margin: [8, 8, 12, 8],
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.95 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true,
+            scrollY: 0,
+            windowWidth: 1100,
+          },
+          jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'landscape',
+          },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        })
+        .from(container)
+        .save();
 
-      setTimeout(() => URL.revokeObjectURL(url), 15000);
+      // Cleanup
+      document.body.removeChild(container);
 
       app.showToast('تم تصدير PDF بنجاح ✅', 'success');
     } catch (err) {
@@ -222,7 +178,7 @@
 
   // ── Override exportResponsesPDF with mobile routing ──
   // On desktop: calls the original method from responses.js (unchanged)
-  // On mobile: calls the jsPDF-based method above
+  // On mobile: calls the html2pdf-based method above
   window.App.exportResponsesPDF = function () {
     if (isMobileDevice()) {
       return exportResponsesPDFMobile();
