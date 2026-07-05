@@ -938,20 +938,46 @@ Object.assign(window.App, {
       if(form.isQuizMode) {
         let totalPoints = 0;
         let earnedPoints = 0;
+        let reviewHtml = '';
+        if (form.allowQuizReview) {
+          reviewHtml += '<div id="quiz-review-container" style="display:none; text-align:right; margin-top:20px; border-top:1px solid var(--border); padding-top:20px;">';
+          reviewHtml += '<h3 style="margin-bottom:15px; color:var(--text-primary);">تفاصيل الإجابات</h3>';
+        }
+
         form.fields.forEach(f => {
           if(f.points > 0 && f.correctAnswer) {
             totalPoints += (f.points || 0);
-            if(payloadData[f.label] === f.correctAnswer) {
+            const studentAnswer = payloadData[f.label] || 'لم تتم الإجابة';
+            const isCorrect = studentAnswer === f.correctAnswer;
+            if(isCorrect) {
               earnedPoints += (f.points || 0);
+            }
+            if (form.allowQuizReview) {
+              reviewHtml += `
+                <div style="background:var(--bg-tertiary); padding:15px; border-radius:8px; margin-bottom:15px; border-right:4px solid ${isCorrect ? '#10B981' : '#EF4444'}; text-align:start;">
+                  <div style="font-weight:bold; margin-bottom:8px;">${this.escape(f.label)} <span style="font-size:0.85rem; color:var(--text-tertiary); font-weight:normal;">(${f.points} نقطة)</span></div>
+                  <div style="margin-bottom:5px;">إجابتك: <strong style="color:${isCorrect ? '#10B981' : '#EF4444'}">${this.escape(studentAnswer)}</strong> ${isCorrect ? '✅' : '❌'}</div>
+                  ${!isCorrect ? `<div>الإجابة الصحيحة: <strong style="color:#10B981">${this.escape(f.correctAnswer)}</strong></div>` : ''}
+                </div>
+              `;
             }
           }
         });
+
+        if (form.allowQuizReview) {
+          reviewHtml += '</div>';
+        }
+
         payloadData['_quizScore'] = `${earnedPoints} / ${totalPoints}`;
         quizHtml = `
           <div style="background:var(--bg-card); border:2px solid #10B981; border-radius:12px; padding:20px; margin:20px auto; max-width:400px;">
             <h3 style="color:#10B981; margin:0 0 10px 0;">🎯 نتيجة الاختبار</h3>
             <div style="font-size:2rem; font-weight:900;">${earnedPoints} <span style="font-size:1.2rem; color:var(--text-secondary);">/ ${totalPoints}</span></div>
+            ${form.allowQuizReview ? `
+              <button class="btn btn-secondary btn-sm" style="margin-top:15px; width:100%;" onclick="const r = document.getElementById('quiz-review-container'); r.style.display = r.style.display === 'none' ? 'block' : 'none'; this.innerText = r.style.display === 'none' ? 'عرض تفاصيل الإجابات' : 'إخفاء التفاصيل';">عرض تفاصيل الإجابات</button>
+            ` : ''}
           </div>
+          ${form.allowQuizReview ? reviewHtml : ''}
         `;
       }
 
