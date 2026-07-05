@@ -247,7 +247,10 @@ window.App = {
   },
 
   async save() {
-    // Backward compatibility for methods that call App.save() to save theme
+    // Persist theme preference to localStorage
+    try {
+      localStorage.setItem('menoufia_forms_theme', this.state.settings.theme);
+    } catch(e) { /* localStorage unavailable */ }
   },
 
   async navigate(view, params = {}, pushHistory = true) {
@@ -394,6 +397,9 @@ window.App = {
   },
 
   applyTheme() {
+    // Restore saved theme from localStorage
+    const savedTheme = localStorage.getItem('menoufia_forms_theme');
+    if (savedTheme) this.state.settings.theme = savedTheme;
     document.documentElement.setAttribute('data-theme', this.state.settings.theme);
     document.getElementById('theme-toggle').innerText = this.state.settings.theme === 'dark' ? '☀️' : '🌙';
   },
@@ -461,10 +467,11 @@ Object.assign(window.App, {
       return;
     }
 
+    const safeMsg = this.escape(msg);
     const t = document.createElement('div');
     t.className = `toast ${type}`;
     t.innerHTML = `
-      <span>${msg}</span>
+      <span>${safeMsg}</span>
       <div class="toast-progress"><div class="toast-progress-bar"></div></div>
     `;
     c.appendChild(t);
@@ -483,6 +490,17 @@ Object.assign(window.App, {
       return DOMPurify.sanitize(String(s), { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
     }
     const d = document.createElement('div'); d.innerText = String(s); return d.innerHTML;
+  },
+
+  downloadCSV(csv, filename) {
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
   },
 
   loadScript(src) {
