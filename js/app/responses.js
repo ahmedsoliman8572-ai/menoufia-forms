@@ -479,153 +479,230 @@ viewResponses(formId) {
   },
 
   async exportResponsesPDF() {
-    const btn = document.querySelector('button[onclick="App.exportResponsesPDF()"]');
-    const originalText = btn ? btn.innerHTML : 'تصدير PDF';
-    if(btn) { btn.innerHTML = 'جاري التصدير...'; btn.disabled = true; }
-    
-    this.showToast('جاري تجهيز ملف الـ PDF... (قد يستغرق بضع ثوانٍ)', 'info');
-    
     const form = this.getForm();
     if(!form || !form.submissions || form.submissions.length === 0) {
       this.showToast('لا توجد ردود لتصديرها', 'error');
-      if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
       return;
     }
 
-    try {
-      // Load jsPDF and AutoTable
-      if(!window.jspdf) {
-        await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    // Build a complete standalone HTML page for printing
+    let html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>تقرير ردود - ${this.escape(form.title)}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Tajawal', 'Segoe UI', Arial, sans-serif;
+      direction: rtl;
+      background: #fff;
+      color: #1a1a2e;
+      padding: 30px;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .report-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #4f46e5;
+    }
+    .report-header h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #4f46e5;
+      margin-bottom: 8px;
+    }
+    .report-header .meta {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .report-header .meta span {
+      display: inline-block;
+      margin: 0 10px;
+      padding: 4px 12px;
+      background: #f0f0ff;
+      border-radius: 20px;
+      font-weight: 700;
+      color: #4f46e5;
+    }
+    .charts-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+    .charts-section img {
+      max-width: 48%;
+      max-height: 250px;
+      object-fit: contain;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+    thead th {
+      background: #4f46e5 !important;
+      color: #fff !important;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      border: 1px solid #3730a3;
+      text-align: center;
+    }
+    tbody td {
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      text-align: right;
+      vertical-align: middle;
+    }
+    tbody tr:nth-child(even) {
+      background: #f8fafc !important;
+    }
+    tbody tr:hover {
+      background: #eef2ff !important;
+    }
+    .col-num {
+      text-align: center;
+      font-weight: 700;
+      color: #4f46e5;
+      width: 40px;
+    }
+    .col-date {
+      white-space: nowrap;
+      direction: ltr;
+      text-align: right;
+      font-size: 0.8rem;
+    }
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #999;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+    .badge-attended {
+      background: rgba(16,185,129,0.15);
+      color: #059669;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .badge-absent {
+      background: rgba(100,116,139,0.15);
+      color: #64748b;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .img-thumb {
+      max-width: 60px;
+      max-height: 60px;
+      border-radius: 4px;
+      display: block;
+      margin: 0 auto;
+    }
+    @media print {
+      body { padding: 15px; }
+      thead { display: table-header-group; }
+      tr { page-break-inside: avoid; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align:center; margin-bottom:20px; padding:15px; background:#f0f0ff; border-radius:12px;">
+    <p style="margin-bottom:10px; font-weight:700; color:#4f46e5;">اضغط Ctrl+P ثم اختر "Save as PDF" أو "حفظ كـ PDF" للتصدير</p>
+    <button onclick="window.print()" style="padding:10px 30px; background:#4f46e5; color:#fff; border:none; border-radius:8px; font-family:Tajawal; font-size:1rem; font-weight:700; cursor:pointer;">🖨️ طباعة / تصدير PDF</button>
+  </div>
+
+  <div class="report-header">
+    <h1>${this.escape(form.title)}</h1>
+    <div class="meta">
+      <span>إجمالي الردود: ${form.submissions.length}</span>
+      <span>تاريخ التصدير: ${new Date().toLocaleDateString('ar-EG')}</span>
+    </div>
+  </div>`;
+
+    // Charts as images
+    const canvases = document.getElementById('page-responses').querySelectorAll('canvas');
+    if(canvases.length > 0) {
+      html += `<div class="charts-section">`;
+      canvases.forEach(canvas => {
+        try {
+          html += `<img src="${canvas.toDataURL('image/png')}">`;
+        } catch(e) {}
+      });
+      html += `</div>`;
+    }
+
+    // Table
+    html += `<table><thead><tr>`;
+    html += `<th>#</th><th>تاريخ الإرسال</th>`;
+    if(form.enableTicketing) html += `<th>الحضور</th>`;
+    form.fields.forEach(f => {
+      if(f.type !== 'section_break') {
+        html += `<th>${this.escape(f.label)}</th>`;
       }
-      if(!window.jspdf.jsPDF.API.autoTable) {
-        await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
-      }
+    });
+    html += `</tr></thead><tbody>`;
 
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-
-      // Load Arabic font (Amiri) and embed it
-      if(!window._amiriFontBase64) {
-        this.showToast('جاري تحميل الخط العربي...', 'info');
-        const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf';
-        const response = await fetch(fontUrl);
-        if(!response.ok) throw new Error('فشل تحميل الخط العربي');
-        const fontBuffer = await response.arrayBuffer();
-        // Convert ArrayBuffer to base64
-        const bytes = new Uint8Array(fontBuffer);
-        let binary = '';
-        for(let i = 0; i < bytes.length; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        window._amiriFontBase64 = btoa(binary);
-      }
-
-      // Register the Arabic font with jsPDF
-      doc.addFileToVFS('Amiri-Regular.ttf', window._amiriFontBase64);
-      doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal');
-      doc.setFont('Amiri');
-
-      // Title
-      doc.setFontSize(18);
-      doc.setTextColor(79, 70, 229);
-      const title = form.title || 'تقرير الردود';
-      doc.text(title, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
-
-      // Subtitle
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      const subtitle = 'إجمالي الردود: ' + form.submissions.length + ' | تاريخ التصدير: ' + new Date().toLocaleDateString('ar-EG');
-      doc.text(subtitle, doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
-
-      // Build table headers
-      const headers = ['#', 'تاريخ الإرسال'];
+    form.submissions.forEach((sub, idx) => {
+      html += `<tr>`;
+      html += `<td class="col-num">${idx + 1}</td>`;
+      html += `<td class="col-date">${sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-'}</td>`;
+      
       if(form.enableTicketing) {
-        headers.push('الحضور');
+        const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
+        html += `<td style="text-align:center;"><span class="${attended ? 'badge-attended' : 'badge-absent'}">${attended ? '✅ حضر' : '⏳ لم يحضر'}</span></td>`;
       }
+
       form.fields.forEach(f => {
         if(f.type !== 'section_break') {
-          headers.push(f.label);
-        }
-      });
-
-      // Build table rows
-      const rows = [];
-      form.submissions.forEach((sub, idx) => {
-        const row = [];
-        row.push(String(idx + 1));
-        row.push(sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-');
-        
-        if(form.enableTicketing) {
-          const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
-          row.push(attended ? 'حضر' : 'لم يحضر');
-        }
-
-        form.fields.forEach(f => {
-          if(f.type !== 'section_break') {
-            let val = sub.data[f.label];
-            if(val === undefined || val === null) val = '-';
-            if((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
-              val = '[صورة مرفقة]';
-            }
-            row.push(String(val));
+          let val = sub.data[f.label];
+          if(val === undefined || val === null) val = '-';
+          if((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
+            html += `<td style="text-align:center;"><img class="img-thumb" src="${val}"></td>`;
+          } else {
+            html += `<td>${this.escape(val)}</td>`;
           }
-        });
-        rows.push(row);
-      });
-
-      // Generate table using AutoTable with Arabic font
-      doc.autoTable({
-        head: [headers],
-        body: rows,
-        startY: 28,
-        theme: 'grid',
-        styles: {
-          font: 'Amiri',
-          fontSize: 9,
-          cellPadding: 3,
-          overflow: 'linebreak',
-          halign: 'right',
-          valign: 'middle',
-          lineColor: [200, 200, 200],
-          lineWidth: 0.3,
-        },
-        headStyles: {
-          fillColor: [79, 70, 229],
-          textColor: [255, 255, 255],
-          fontStyle: 'normal',
-          fontSize: 10,
-          halign: 'center',
-        },
-        alternateRowStyles: {
-          fillColor: [248, 249, 250],
-        },
-        columnStyles: {
-          0: { halign: 'center', cellWidth: 10 },
-        },
-        margin: { top: 28, right: 10, bottom: 15, left: 10 },
-        didDrawPage: function(data) {
-          // Re-set font for footer
-          doc.setFont('Amiri');
-          doc.setFontSize(8);
-          doc.setTextColor(150);
-          doc.text(
-            'صفحة ' + data.pageNumber + ' من ' + doc.internal.getNumberOfPages(),
-            doc.internal.pageSize.getWidth() / 2,
-            doc.internal.pageSize.getHeight() - 8,
-            { align: 'center' }
-          );
         }
       });
+      html += `</tr>`;
+    });
 
-      // Save
-      doc.save('تقرير_ردود_' + form.title.replace(/\s+/g, '_') + '.pdf');
-      this.showToast('تم تصدير ملف PDF بنجاح ✅', 'success');
+    html += `</tbody></table>`;
+    html += `<div class="footer">تم إنشاء هذا التقرير بواسطة Menoufia Forms | ${new Date().toLocaleString('ar-EG')}</div>`;
+    html += `</body></html>`;
 
-    } catch(err) {
-      console.error('PDF Export Error:', err);
-      this.showToast('حدث خطأ أثناء التصدير: ' + err.message, 'error');
-    } finally {
-      if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
+    // Open in new window for printing
+    const printWindow = window.open('', '_blank');
+    if(!printWindow) {
+      this.showToast('يرجى السماح بالنوافذ المنبثقة (Pop-ups) في المتصفح', 'error');
+      return;
     }
+    printWindow.document.write(html);
+    printWindow.document.close();
+    
+    // Wait for fonts and images to load then trigger print
+    printWindow.onload = function() {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 500);
+    };
+
+    this.showToast('تم فتح نافذة التصدير - اختر "Save as PDF" من نافذة الطباعة', 'success');
   }
 });
