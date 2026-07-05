@@ -125,7 +125,7 @@ Object.assign(window.App, {
             </span>
           </td>
           <td style="padding:10px; border:1px solid var(--border); text-align:center;">
-            <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+            <div style="display:flex; gap:6px; justify-content:center; flex-wrap:nowrap;">
             ${creator.email === App.state.currentUser.email 
               ? (creator.role === 'super_admin' && !data.some(c => c.role === 'owner')
                   ? `<button class="btn btn-primary btn-sm" style="background:#8b5cf6; padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'owner')">ترقية لنفسي لمالك</button>`
