@@ -263,10 +263,10 @@ Object.assign(window.App, {
           </label>
         </div>
 
-        ${(field.type === 'single_choice' || field.type === 'multiple_choice' || field.type === 'dropdown') ? `
+        ${(field.type === 'single_choice' || field.type === 'multiple_choice' || field.type === 'dropdown' || origDef.isChoice || origDef.isDropdown || origDef.hasOptions) ? `
           <div class="form-group">
             <label>الخيارات</label>
-            ${(field.type === 'single_choice' || field.type === 'dropdown') ? `
+            ${(field.type === 'single_choice' || field.type === 'dropdown' || origDef.isChoice || origDef.isDropdown) ? `
             <div class="toggle-row" style="margin-bottom:10px; background:rgba(0,0,0,0.02); padding:8px; border-radius:4px;">
               <label style="font-size:0.9rem;">الانتقال إلى قسم استناداً إلى الإجابة</label>
               <label class="toggle-switch">
