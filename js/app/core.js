@@ -134,7 +134,7 @@ window.App = {
       if (btnContacts) btnContacts.style.display = 'none';
       this.state.forms = [];
       if (this.state.currentView !== 'fill' && this.state.currentView !== 'scanner') {
-        this.navigate('dashboard');
+        this.navigate('landing');
       }
     }
   },
@@ -259,6 +259,13 @@ window.App = {
   },
 
   async navigate(view, params = {}, pushHistory = true) {
+    if (!['dashboard', 'landing', 'builder', 'fill', 'responses', 'admin', 'contacts'].includes(view)) return;
+
+    if (view !== 'landing' && view !== 'fill' && view !== 'scanner' && !this.state.currentUser) {
+      // If trying to access protected route without auth, redirect to landing
+      return this.navigate('landing');
+    }
+
     if (pushHistory) {
       if (this.state.currentView !== view || JSON.stringify(this.state.currentParams || {}) !== JSON.stringify(params)) {
         window.history.pushState({ view, params }, '', window.location.search);
