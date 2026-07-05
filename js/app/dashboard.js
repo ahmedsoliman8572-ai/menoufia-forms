@@ -8,9 +8,9 @@ Object.assign(window.App, {
 
     // Calculate real stats from actual data
     const totalForms = this.state.stats.totalFormsCreated || this.state.forms.length;
-    const totalFields = this.state.forms.reduce((sum, f) => sum + f.fields.length, 0);
+    const totalFields = this.state.forms.reduce((sum, f) => sum + (f.fields?.length || 0), 0);
     const totalSubmissions = this.state.stats.totalSubmissions || 0;
-    const activeForms = this.state.forms.filter(f => f.fields.length > 0).length;
+    const activeForms = this.state.forms.filter(f => (f.fields?.length || 0) > 0).length;
     const fieldTypesCount = Object.keys(FIELD_TYPES).length;
     const governoratesCount = EGYPT_GOVERNORATES.length;
 
@@ -57,7 +57,7 @@ Object.assign(window.App, {
 
     html += `<div class="forms-grid">`;
     this.state.forms.forEach(form => {
-      const date = new Date(form.createdAt).toLocaleDateString('ar-EG');
+      const date = new Date(form.created_at || form.createdAt || Date.now()).toLocaleDateString('ar-EG');
       const responsesCount = form.responses_count || (form.submissions ? form.submissions.length : 0);
       html += `
         <div class="form-card" onclick="App.navigate('builder', {formId: '${form.id}'})" style="position:relative;">
@@ -182,22 +182,36 @@ Object.assign(window.App, {
 
 
 
-  duplicateForm(id) {
+  async duplicateForm(id) {
     const form = this.state.forms.find(f => f.id === id);
     if(!form) return;
-    const clone = JSON.parse(JSON.stringify(form));
-    clone.id = 'frm_' + Date.now();
-    clone.title = form.title + ' (نسخة)';
-    clone.createdAt = new Date().toISOString();
-    clone.submissions = []; // Don't copy submissions
-    clone.views = 0;
-    // Give all fields new IDs
-    clone.fields = clone.fields.map(f => ({ ...f, id: 'fld_' + Date.now() + Math.floor(Math.random() * 10000) }));
-    this.state.forms.unshift(clone);
-    this.state.stats.totalFormsCreated = (this.state.stats.totalFormsCreated || 0) + 1;
-    this.save();
-    this.renderDashboard();
-    this.showToast('تم نسخ النموذج بنجاح ', 'success');
+    
+    const cloneFields = form.fields ? JSON.parse(JSON.stringify(form.fields)).map(f => ({
+      ...f, id: 'fld_' + Date.now() + Math.floor(Math.random() * 10000)
+    })) : [];
+
+    const newForm = {
+      user_id: this.state.currentUser?.id || form.user_id,
+      title: form.title + ' (نسخة)',
+      description: form.description || '',
+      fields: cloneFields,
+      settings: form.settings ? JSON.parse(JSON.stringify(form.settings)) : {}
+    };
+
+    try {
+      const { data, error } = await supabaseClient.from('forms').insert([newForm]).select();
+      if(error) throw error;
+      
+      const createdForm = data[0];
+      if (createdForm.settings) Object.assign(createdForm, createdForm.settings);
+      this.state.forms.unshift(createdForm);
+      this.state.stats.totalFormsCreated = (this.state.stats.totalFormsCreated || 0) + 1;
+      this.renderDashboard();
+      this.showToast('تم نسخ النموذج بنجاح', 'success');
+    } catch(err) {
+      console.error(err);
+      this.showToast('حدث خطأ أثناء نسخ النموذج', 'error');
+    }
   },
 
   
