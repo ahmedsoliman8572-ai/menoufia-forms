@@ -37,10 +37,10 @@
     // Lazy-load jsPDF + AutoTable
     try {
       if (typeof window.jspdf === 'undefined') {
-        await app.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js');
+        await app.loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js');
       }
       if (typeof window.jspdf.jsPDF.API.autoTable === 'undefined') {
-        await app.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js');
+        await app.loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js');
       }
     } catch (e) {
       console.error('Failed to load jsPDF libraries:', e);
