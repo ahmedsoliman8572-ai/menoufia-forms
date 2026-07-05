@@ -115,8 +115,8 @@ Object.assign(window.App, {
     
     let html = `
       <div class="form-header-card">
-        <input type="text" value="${this.escape(form.title)}" placeholder="عنوان النموذج" oninput="App.updateFormProp('title', this.value); document.getElementById('builder-form-title').value = this.value">
-        <textarea placeholder="وصف النموذج (اختياري)..." oninput="App.updateFormProp('description', this.value)">${this.escape(form.description)}</textarea>
+        <input type="text" value="${this.escape(form.title)}" placeholder="عنوان النموذج" onchange="App.updateFormProp('title', this.value); document.getElementById('builder-form-title').value = this.value">
+        <textarea placeholder="وصف النموذج (اختياري)..." onchange="App.updateFormProp('description', this.value)">${this.escape(form.description)}</textarea>
       </div>
     `;
 
@@ -142,7 +142,7 @@ Object.assign(window.App, {
           </div>
           
           <div class="field-card-header">
-            <input type="text" class="field-label-edit" value="${this.escape(field.label)}" placeholder="عنوان السؤال" oninput="App.updateFieldProp('${field.id}', 'label', this.value)">
+            <input type="text" class="field-label-edit" value="${this.escape(field.label)}" placeholder="عنوان السؤال" onchange="App.updateFieldProp('${field.id}', 'label', this.value)">
             <span class="field-type-badge">${origDef.icon} ${origDef.label}</span>
           </div>
           
@@ -220,13 +220,13 @@ Object.assign(window.App, {
         
         <div class="form-group">
           <label>عنوان السؤال</label>
-          <input type="text" class="form-control" value="${this.escape(field.label)}" oninput="App.updateFieldProp('${field.id}', 'label', this.value)">
+          <input type="text" class="form-control" value="${this.escape(field.label)}" onchange="App.updateFieldProp('${field.id}', 'label', this.value); App.renderSettings();">
         </div>
         
         ${origDef.hasPlaceholder ? `
           <div class="form-group">
             <label>نص توضيحي (Placeholder)</label>
-            <input type="text" class="form-control" value="${this.escape(field.placeholder||'')}" oninput="App.updateFieldProp('${field.id}', 'placeholder', this.value)">
+            <input type="text" class="form-control" value="${this.escape(field.placeholder||'')}" onchange="App.updateFieldProp('${field.id}', 'placeholder', this.value)">
           </div>
         ` : ''}
 
@@ -245,7 +245,7 @@ Object.assign(window.App, {
             <div class="toggle-row" style="margin-bottom:10px; background:rgba(0,0,0,0.02); padding:8px; border-radius:4px;">
               <label style="font-size:0.9rem;">الانتقال إلى قسم استناداً إلى الإجابة</label>
               <label class="toggle-switch">
-                <input type="checkbox" ${field.logicBranching ? 'checked' : ''} onchange="App.updateFieldProp('${field.id}', 'logicBranching', this.checked)">
+                <input type="checkbox" ${field.logicBranching ? 'checked' : ''} onchange="App.updateFieldProp('${field.id}', 'logicBranching', this.checked); App.renderSettings();">
                 <span class="toggle-slider"></span>
               </label>
             </div>
