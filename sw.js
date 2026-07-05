@@ -1,4 +1,4 @@
-const CACHE_NAME = 'menoufia-forms-v5'; // Bumped version for new caching strategy
+const CACHE_NAME = 'menoufia-forms-v6'; // Bumped version for mobile PDF export
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -18,6 +18,7 @@ const ASSETS_TO_CACHE = [
   './js/app/builder.js',
   './js/app/fill.js',
   './js/app/responses.js',
+  './js/app/pdf-mobile.js',
   './js/app/share.js',
   './js/app/compressor.js',
   './js/app/main.js'
