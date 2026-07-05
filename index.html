@@ -67,6 +67,44 @@
 
 
   <!-- ============================== -->
+  <!-- LANDING PAGE                   -->
+  <!-- ============================== -->
+  <main id="page-landing" class="page" role="main">
+    <div class="hero-section">
+      <div class="hero-shapes">
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
+      </div>
+      <div class="hero-content">
+        <div class="hero-badge">✨ الإصدار الجديد 3.0</div>
+        <h1 class="hero-title">منصة <span class="gradient-text">Menoufia Forms</span> لإنشاء النماذج الاحترافية</h1>
+        <p class="hero-desc">أنشئ النماذج والاستبيانات المتقدمة، وشاركها مع جمهورك، واجمع الردود في الوقت الفعلي مع تحليلات ذكية ولوحة تحكم متكاملة تدعم تذاكر الدخول ونظام المجلدات.</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary" onclick="App.showLoginModal()">ابدأ الآن مجاناً</button>
+        </div>
+        <div class="hero-features">
+          <div class="hero-feature">
+            <div class="hero-feature-icon">🚀</div>
+            <h3>سريع وعصري</h3>
+            <p>واجهة مستخدم حديثة وتفاعلية سهلة الاستخدام.</p>
+          </div>
+          <div class="hero-feature">
+            <div class="hero-feature-icon">📊</div>
+            <h3>تحليلات ذكية</h3>
+            <p>رسوم بيانية لحظية وإحصائيات متقدمة للردود.</p>
+          </div>
+          <div class="hero-feature">
+            <div class="hero-feature-icon">🎫</div>
+            <h3>تذاكر الدخول</h3>
+            <p>دعم نظام مسح التذاكر (QR) للفعاليات والمؤتمرات.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================== -->
   <!-- DASHBOARD                      -->
   <!-- ============================== -->
   <main id="page-dashboard" class="page active" role="main">
@@ -288,6 +326,7 @@
         <h2 style="margin:0; font-size:1.2rem;"> لوحة الردود والتحليلات</h2>
       </div>
       <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="App.exportResponsesPDF()">تصدير PDF</button>
         <button class="btn btn-primary btn-sm" onclick="App.exportResponsesExcel()">تصدير Excel</button>
       </div>
     </div>
@@ -308,6 +347,14 @@
       <!-- Charts Section -->
       <div id="responses-charts" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-bottom:30px;">
         <!-- Charts will be generated here -->
+      </div>
+
+      <!-- Search Responses -->
+      <div style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+        <div class="search-bar" style="width: 100%; max-width: 400px; background: var(--bg-card);">
+          <span>🔍</span>
+          <input type="text" id="responses-search-input" placeholder="ابحث في الردود (الاسم، البريد، التاريخ...)" oninput="App.filterResponses(this.value)" aria-label="البحث في الردود">
+        </div>
       </div>
 
       <div id="responses-table-container" style="display:block; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow-x:auto;">
@@ -592,12 +639,17 @@
   <!-- ============================== -->
   <!-- APPLICATION LOGIC              -->
   <!-- ============================== -->
+  <!-- Core dependencies (needed immediately) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.3/purify.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-  <script src="https://unpkg.com/html5-qrcode" defer></script>
+
+  <!-- Heavy libraries loaded on-demand via App.loadScript() -->
+  <!-- Chart.js: loaded when viewing responses/charts -->
+  <!-- XLSX: loaded when exporting to Excel -->
+  <!-- html5-qrcode: loaded when opening QR scanner -->
+
+  <!-- Application code -->
   <script src="js/validators.js" defer></script>
   <script src="js/config.js" defer></script>
   <script src="js/app/core.js" defer></script>
@@ -611,7 +663,5 @@
   <script src="js/app/share.js" defer></script>
   <script src="js/app/compressor.js" defer></script>
   <script src="js/app/main.js" defer></script>
-  <script>
-  </script>
 </body>
 </html>
