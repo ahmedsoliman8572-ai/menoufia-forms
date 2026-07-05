@@ -369,7 +369,7 @@
 .field-actions button.del:hover { color: var(--error); background: var(--error-bg); }
 
 /* Field Previews */
-.field-preview { pointer-events: none; opacity: 0.75; }
+.field-preview { opacity: 0.75; }
 .fake-input {
   width: 100%; padding: 12px 16px; border: 1.5px solid var(--border);
   border-radius: var(--radius-sm); background: var(--bg-input); color: var(--text-tertiary);
