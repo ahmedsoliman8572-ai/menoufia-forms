@@ -300,7 +300,7 @@ Object.assign(window.App, {
       
       // 1. Check choice fields logic branching on current page
       for (const field of currentFields) {
-        if (field.logicBranching && (field.type === 'single_choice' || field.type === 'dropdown')) {
+        if (field.logicBranching) {
           const val = this.getVal(field);
           if (val && field.options) {
             const optIndex = field.options.indexOf(val);
