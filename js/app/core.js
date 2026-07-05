@@ -42,8 +42,7 @@ window.App = {
     selectedFieldId: null,
     history: { undoStack: [], redoStack: [] },
     rolePermissions: {
-      admin: { create: true, edit: true, delete: false },
-      super_admin: { create: true, edit: true, delete: true }
+      admin: { create: true, edit: true, delete: false, view_all: false }
     }
   },
 
@@ -142,8 +141,8 @@ window.App = {
         if (userInfo) userInfo.style.display = 'flex';
         if (userEmail) userEmail.innerText = this.state.currentUser.email;
         if (newFormBtn) newFormBtn.style.display = this.hasPermission('create') ? 'inline-flex' : 'none';
-        if (adminPanelBtn) adminPanelBtn.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-block' : 'none';
-        if (btnContacts) btnContacts.style.display = (this.state.userRole === 'super_admin' || this.state.userRole === 'owner') ? 'inline-flex' : 'none';
+        if (adminPanelBtn) adminPanelBtn.style.display = (this.state.userRole === 'owner') ? 'inline-block' : 'none';
+        if (btnContacts) btnContacts.style.display = (this.state.userRole === 'owner') ? 'inline-flex' : 'none';
 
         if (this.state.currentView === 'dashboard') {
           this.loadForms();
@@ -243,8 +242,8 @@ window.App = {
       // Fetch forms with conditional filtering
       let query = supabaseClient.from('forms').select('*').order('updated_at', { ascending: false });
       
-      // If user is a restricted_admin, only fetch their own forms
-      if (this.state.userRole === 'restricted_admin') {
+      // If user does not have view_all permission, only fetch their own forms
+      if (!this.hasPermission('view_all')) {
         query = query.eq('user_id', this.state.currentUser.id);
       }
 
