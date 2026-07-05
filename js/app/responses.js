@@ -483,7 +483,7 @@ viewResponses(formId) {
     const originalText = btn ? btn.innerHTML : 'تصدير PDF';
     if(btn) { btn.innerHTML = 'جاري التصدير...'; btn.disabled = true; }
     
-    this.showToast('جاري تجهيز ملف الـ PDF...', 'info');
+    this.showToast('جاري تجهيز ملف الـ PDF... (قد يستغرق بضع ثوانٍ)', 'info');
     
     const form = this.getForm();
     if(!form || !form.submissions || form.submissions.length === 0) {
@@ -504,8 +504,26 @@ viewResponses(formId) {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-      // Add Arabic font support - use built-in Helvetica as fallback
-      doc.setFont('Helvetica');
+      // Load Arabic font (Amiri) and embed it
+      if(!window._amiriFontBase64) {
+        this.showToast('جاري تحميل الخط العربي...', 'info');
+        const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf';
+        const response = await fetch(fontUrl);
+        if(!response.ok) throw new Error('فشل تحميل الخط العربي');
+        const fontBuffer = await response.arrayBuffer();
+        // Convert ArrayBuffer to base64
+        const bytes = new Uint8Array(fontBuffer);
+        let binary = '';
+        for(let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        window._amiriFontBase64 = btoa(binary);
+      }
+
+      // Register the Arabic font with jsPDF
+      doc.addFileToVFS('Amiri-Regular.ttf', window._amiriFontBase64);
+      doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal');
+      doc.setFont('Amiri');
 
       // Title
       doc.setFontSize(18);
@@ -516,7 +534,7 @@ viewResponses(formId) {
       // Subtitle
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      const subtitle = `إجمالي الردود: ${form.submissions.length} | تاريخ التصدير: ${new Date().toLocaleDateString('ar-EG')}`;
+      const subtitle = 'إجمالي الردود: ' + form.submissions.length + ' | تاريخ التصدير: ' + new Date().toLocaleDateString('ar-EG');
       doc.text(subtitle, doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
 
       // Build table headers
@@ -539,14 +557,13 @@ viewResponses(formId) {
         
         if(form.enableTicketing) {
           const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
-          row.push(attended ? 'حضر ✅' : 'لم يحضر');
+          row.push(attended ? 'حضر' : 'لم يحضر');
         }
 
         form.fields.forEach(f => {
           if(f.type !== 'section_break') {
             let val = sub.data[f.label];
             if(val === undefined || val === null) val = '-';
-            // Handle images - just show text placeholder in PDF
             if((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
               val = '[صورة مرفقة]';
             }
@@ -556,15 +573,15 @@ viewResponses(formId) {
         rows.push(row);
       });
 
-      // Generate table using AutoTable
+      // Generate table using AutoTable with Arabic font
       doc.autoTable({
         head: [headers],
         body: rows,
         startY: 28,
         theme: 'grid',
         styles: {
-          font: 'Helvetica',
-          fontSize: 8,
+          font: 'Amiri',
+          fontSize: 9,
           cellPadding: 3,
           overflow: 'linebreak',
           halign: 'right',
@@ -575,24 +592,24 @@ viewResponses(formId) {
         headStyles: {
           fillColor: [79, 70, 229],
           textColor: [255, 255, 255],
-          fontStyle: 'bold',
-          fontSize: 9,
+          fontStyle: 'normal',
+          fontSize: 10,
           halign: 'center',
         },
         alternateRowStyles: {
           fillColor: [248, 249, 250],
         },
         columnStyles: {
-          0: { halign: 'center', cellWidth: 10 }, // # column
+          0: { halign: 'center', cellWidth: 10 },
         },
         margin: { top: 28, right: 10, bottom: 15, left: 10 },
         didDrawPage: function(data) {
-          // Footer with page number
-          const pageCount = doc.internal.getNumberOfPages();
+          // Re-set font for footer
+          doc.setFont('Amiri');
           doc.setFontSize(8);
           doc.setTextColor(150);
           doc.text(
-            `صفحة ${data.pageNumber} من ${pageCount}`,
+            'صفحة ' + data.pageNumber + ' من ' + doc.internal.getNumberOfPages(),
             doc.internal.pageSize.getWidth() / 2,
             doc.internal.pageSize.getHeight() - 8,
             { align: 'center' }
@@ -601,7 +618,7 @@ viewResponses(formId) {
       });
 
       // Save
-      doc.save(`تقرير_ردود_${form.title.replace(/\s+/g, '_')}.pdf`);
+      doc.save('تقرير_ردود_' + form.title.replace(/\s+/g, '_') + '.pdf');
       this.showToast('تم تصدير ملف PDF بنجاح ✅', 'success');
 
     } catch(err) {
