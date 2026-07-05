@@ -485,10 +485,6 @@ viewResponses(formId) {
     
     this.showToast('جاري تجهيز ملف الـ PDF...', 'info');
     
-    if(!window.html2pdf) {
-      await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
-    }
-    
     const form = this.getForm();
     if(!form || !form.submissions || form.submissions.length === 0) {
       this.showToast('لا توجد ردود لتصديرها', 'error');
@@ -496,98 +492,123 @@ viewResponses(formId) {
       return;
     }
 
-    // Build a clean HTML document for PDF instead of cloning the live DOM
-    let html = `
-      <div style="direction:rtl; font-family: 'Tajawal', Arial, sans-serif; padding:20px; background:#fff; color:#000;">
-        <h1 style="text-align:center; color:#4f46e5; margin-bottom:5px; font-size:1.5rem;">${this.escape(form.title)}</h1>
-        <p style="text-align:center; color:#666; margin-bottom:20px; font-size:0.9rem;">تقرير الردود - إجمالي: ${form.submissions.length} رد</p>
-    `;
-
-    // Convert chart canvases to images
-    const originalCanvases = document.getElementById('page-responses').querySelectorAll('canvas');
-    if(originalCanvases.length > 0) {
-      html += `<div style="display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-bottom:25px;">`;
-      originalCanvases.forEach(canvas => {
-        try {
-          const imgSrc = canvas.toDataURL('image/png');
-          html += `<div style="flex:1; min-width:250px; max-width:45%; text-align:center;">
-            <img src="${imgSrc}" style="width:100%; max-height:250px; object-fit:contain; border:1px solid #eee; border-radius:8px;">
-          </div>`;
-        } catch(e) { /* skip canvas if toDataURL fails */ }
-      });
-      html += `</div>`;
-    }
-
-    // Build table
-    html += `<table style="width:100%; border-collapse:collapse; text-align:right; font-size:0.8rem;">`;
-    
-    // Headers
-    html += `<thead><tr style="background:#f3f4f6;">`;
-    html += `<th style="padding:8px 6px; border:1px solid #ddd; white-space:nowrap; font-weight:bold;">تاريخ الإرسال</th>`;
-    if(form.enableTicketing) {
-      html += `<th style="padding:8px 6px; border:1px solid #ddd; white-space:nowrap; font-weight:bold;">حالة الحضور</th>`;
-    }
-    form.fields.forEach(f => {
-      if(f.type !== 'section_break') {
-        html += `<th style="padding:8px 6px; border:1px solid #ddd; white-space:nowrap; font-weight:bold;">${this.escape(f.label)}</th>`;
+    try {
+      // Load jsPDF and AutoTable
+      if(!window.jspdf) {
+        await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
       }
-    });
-    html += `</tr></thead>`;
-    
-    // Rows
-    html += `<tbody>`;
-    form.submissions.forEach(sub => {
-      const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-';
-      html += `<tr>`;
-      html += `<td style="padding:6px; border:1px solid #ddd; white-space:nowrap; background:#fff; color:#000;">${dateStr}</td>`;
-      
+      if(!window.jspdf.jsPDF.API.autoTable) {
+        await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      // Add Arabic font support - use built-in Helvetica as fallback
+      doc.setFont('Helvetica');
+
+      // Title
+      doc.setFontSize(18);
+      doc.setTextColor(79, 70, 229);
+      const title = form.title || 'تقرير الردود';
+      doc.text(title, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+
+      // Subtitle
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      const subtitle = `إجمالي الردود: ${form.submissions.length} | تاريخ التصدير: ${new Date().toLocaleDateString('ar-EG')}`;
+      doc.text(subtitle, doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
+
+      // Build table headers
+      const headers = ['#', 'تاريخ الإرسال'];
       if(form.enableTicketing) {
-        const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
-        html += `<td style="padding:6px; border:1px solid #ddd; text-align:center; background:#fff; color:#000;">${attended ? '✅ حضر' : '⏳ لم يحضر'}</td>`;
+        headers.push('الحضور');
       }
-
       form.fields.forEach(f => {
         if(f.type !== 'section_break') {
-          let val = sub.data[f.label];
-          if(val === undefined) val = '-';
-          if((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
-            html += `<td style="padding:6px; border:1px solid #ddd; text-align:center; background:#fff;"><img src="${val}" style="max-width:60px; max-height:60px; border-radius:4px;"></td>`;
-          } else {
-            html += `<td style="padding:6px; border:1px solid #ddd; background:#fff; color:#000;">${this.escape(val)}</td>`;
-          }
+          headers.push(f.label);
         }
       });
-      html += `</tr>`;
-    });
-    html += `</tbody></table></div>`;
 
-    // Create a temporary container in the DOM (required by html2pdf)
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px';
-    tempContainer.style.top = '0';
-    tempContainer.style.width = '1200px';
-    tempContainer.innerHTML = html;
-    document.body.appendChild(tempContainer);
+      // Build table rows
+      const rows = [];
+      form.submissions.forEach((sub, idx) => {
+        const row = [];
+        row.push(String(idx + 1));
+        row.push(sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-');
+        
+        if(form.enableTicketing) {
+          const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
+          row.push(attended ? 'حضر ✅' : 'لم يحضر');
+        }
 
-    const opt = {
-      margin:       10,
-      filename:     `تقرير_ردود_${form.title.replace(/\s+/g, '_')}.pdf`,
-      image:        { type: 'jpeg', quality: 0.95 },
-      html2canvas:  { scale: 2, useCORS: true, width: 1200, windowWidth: 1200, backgroundColor: '#ffffff' },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
-      pagebreak:    { mode: ['css', 'legacy'] }
-    };
-    
-    window.html2pdf().set(opt).from(tempContainer).save().then(() => {
-      document.body.removeChild(tempContainer);
-      if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
+        form.fields.forEach(f => {
+          if(f.type !== 'section_break') {
+            let val = sub.data[f.label];
+            if(val === undefined || val === null) val = '-';
+            // Handle images - just show text placeholder in PDF
+            if((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
+              val = '[صورة مرفقة]';
+            }
+            row.push(String(val));
+          }
+        });
+        rows.push(row);
+      });
+
+      // Generate table using AutoTable
+      doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: 28,
+        theme: 'grid',
+        styles: {
+          font: 'Helvetica',
+          fontSize: 8,
+          cellPadding: 3,
+          overflow: 'linebreak',
+          halign: 'right',
+          valign: 'middle',
+          lineColor: [200, 200, 200],
+          lineWidth: 0.3,
+        },
+        headStyles: {
+          fillColor: [79, 70, 229],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 9,
+          halign: 'center',
+        },
+        alternateRowStyles: {
+          fillColor: [248, 249, 250],
+        },
+        columnStyles: {
+          0: { halign: 'center', cellWidth: 10 }, // # column
+        },
+        margin: { top: 28, right: 10, bottom: 15, left: 10 },
+        didDrawPage: function(data) {
+          // Footer with page number
+          const pageCount = doc.internal.getNumberOfPages();
+          doc.setFontSize(8);
+          doc.setTextColor(150);
+          doc.text(
+            `صفحة ${data.pageNumber} من ${pageCount}`,
+            doc.internal.pageSize.getWidth() / 2,
+            doc.internal.pageSize.getHeight() - 8,
+            { align: 'center' }
+          );
+        }
+      });
+
+      // Save
+      doc.save(`تقرير_ردود_${form.title.replace(/\s+/g, '_')}.pdf`);
       this.showToast('تم تصدير ملف PDF بنجاح ✅', 'success');
-    }).catch(err => {
+
+    } catch(err) {
       console.error('PDF Export Error:', err);
-      document.body.removeChild(tempContainer);
-      if(this.showToast) this.showToast('حدث خطأ أثناء التصدير: ' + err.message, 'error');
+      this.showToast('حدث خطأ أثناء التصدير: ' + err.message, 'error');
+    } finally {
       if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
-    });
+    }
   }
 });
