@@ -303,7 +303,7 @@ Object.assign(window.App, {
         if (field.logicBranching) {
           const val = this.getVal(field);
           if (val && field.options) {
-            const optIndex = field.options.indexOf(val);
+            const optIndex = field.options.findIndex(o => this.escape(o).trim() === val.trim());
             if (optIndex !== -1 && field.optionTargets && field.optionTargets[optIndex]) {
               const fieldTarget = field.optionTargets[optIndex];
               // Only override if the target is explicitly set and is not the default 'next'
