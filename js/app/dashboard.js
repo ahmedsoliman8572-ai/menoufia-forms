@@ -107,7 +107,14 @@ Object.assign(window.App, {
               <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">👁️</button>
               ${form.enableTicketing ? `<button onclick="event.stopPropagation(); App.copyScannerLink('${form.id}')" title="نسخ رابط المنظمين (الماسح)" style="background:var(--primary-light); color:white;">📷</button>` : ''}
             </div>
-            <div class="form-card-title" style="font-size:1.1rem; margin-bottom:15px; font-weight:700;">${this.escape(form.title)}</div>
+            
+            ${(() => {
+              const ownerBadge = (App.state.userRole === 'owner' || App.state.userRole === 'super_admin') && form.user_id !== App.state.currentUser.id 
+                ? `<span style="background:var(--warning); color:white; font-size:0.75rem; padding:3px 8px; border-radius:12px; margin-right:8px; font-weight:normal; vertical-align:middle; user-select:none;">مشرف آخر</span>` 
+                : '';
+              return `<div class="form-card-title" style="font-size:1.1rem; margin-bottom:15px; font-weight:700; display:flex; align-items:center;"><span>${this.escape(form.title)}</span>${ownerBadge}</div>`;
+            })()}
+            
             <div class="form-card-meta" style="border-top:1px solid var(--border); padding-top:12px; margin-top:auto;">
               <span style="display:flex; align-items:center; gap:5px;"><span>📋</span> ${form.fields ? form.fields.length : 0} حقول</span>
               <span style="display:flex; align-items:center; gap:5px;"><span>📬</span> ${responsesCount} رد</span>
