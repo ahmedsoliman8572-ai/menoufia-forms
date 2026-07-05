@@ -240,7 +240,24 @@ window.App = {
     if (!this.state.currentUser) return;
     this.renderDashboard(true);
     try {
-      const { data, error } = await supabaseClient.from('forms').select('*').order('updated_at', { ascending: false });
+      // 1. Check isolation mode status
+      let isolationEnabled = false;
+      try {
+        const { data: setRes } = await supabaseClient.from('system_settings').select('value').eq('key', 'isolation_mode').single();
+        if (setRes && setRes.value === 'true') isolationEnabled = true;
+      } catch (e) {
+        // Assume table doesn't exist yet, isolation disabled
+      }
+
+      // 2. Fetch forms with conditional filtering
+      let query = supabaseClient.from('forms').select('*').order('updated_at', { ascending: false });
+      
+      // If isolation is ON, and user is NOT a super_admin/owner, only fetch their own forms
+      if (isolationEnabled && this.state.userRole !== 'owner' && this.state.userRole !== 'super_admin') {
+        query = query.eq('user_id', this.state.currentUser.id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       data.forEach(f => {
         if (f.settings) Object.assign(f, f.settings);
