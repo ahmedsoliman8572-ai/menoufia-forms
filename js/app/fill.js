@@ -923,11 +923,30 @@ Object.assign(window.App, {
     let isValid = true;
     const payloadData = {};
 
+    // Determine which pages were actually visited via branching
+    const visitedPages = new Set(this.state.pageHistory || []);
+
+    // Build page index map: field.id -> page index
+    const fieldPageMap = {};
+    let currentPageIdx = 0;
+    form.fields.forEach(f => {
+      if (f.type === 'section_break') { currentPageIdx++; return; }
+      fieldPageMap[f.id] = currentPageIdx;
+    });
+
     form.fields.forEach(field => {
       if (field.type === 'section_break') return;
 
       const grp = document.getElementById(`group-${field.id}`);
       if (grp && grp.style.display === 'none') return;
+
+      // Skip fields on pages the user never visited (skipped by logic branching)
+      const fieldPage = fieldPageMap[field.id];
+      if (fieldPage !== undefined && !visitedPages.has(fieldPage)) return;
+
+      // Also skip if the field's parent page element is hidden
+      const pageEl = grp ? grp.closest('.form-page') : null;
+      if (pageEl && pageEl.style.display === 'none') return;
 
       const val = this.getVal(field);
       const origType = field.originalType || field.type;
