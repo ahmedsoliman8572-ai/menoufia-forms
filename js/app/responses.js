@@ -485,11 +485,6 @@ Object.assign(window.App, {
       return;
     }
 
-    // On mobile devices, use the jsPDF-based export that generates a real .pdf file
-    if (this._isMobileDevice && this._isMobileDevice()) {
-      return this.exportResponsesPDFMobile();
-    }
-
     // Build a complete standalone HTML page for printing
     let html = `<!DOCTYPE html>
 <html dir="rtl" lang="ar">
