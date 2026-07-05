@@ -2,20 +2,20 @@
 // RESPONSES & CHARTS
 // =============================================
 Object.assign(window.App, {
-viewResponses(formId) {
-    if(formId) this.state.currentFormId = formId;
+  viewResponses(formId) {
+    if (formId) this.state.currentFormId = formId;
     this.navigate('responses');
   },
 
   setupResponsesRealtime(formId) {
-    if(this.responsesSubscription) {
+    if (this.responsesSubscription) {
       supabaseClient.removeChannel(this.responsesSubscription);
     }
     this.responsesSubscription = supabaseClient
       .channel('public:responses')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'responses', filter: `form_id=eq.${formId}` }, payload => {
         const form = this.getForm();
-        if(form && form.id === formId) {
+        if (form && form.id === formId) {
           form.submissions.unshift({ submittedAt: payload.new.submitted_at, data: payload.new.data });
           this.showToast('تم استلام رد جديد الآن!', 'success');
           this.renderResponses(true);
@@ -26,56 +26,56 @@ viewResponses(formId) {
 
   async loadMoreResponses() {
     const form = this.getForm();
-    if(!form) return;
+    if (!form) return;
     const limit = 50;
     const offset = form.submissions ? form.submissions.length : 0;
     const btn = document.getElementById('btn-load-more-responses');
-    if(btn) { btn.innerText = 'جاري التحميل...'; btn.disabled = true; }
-    
+    if (btn) { btn.innerText = 'جاري التحميل...'; btn.disabled = true; }
+
     try {
       const { data, error } = await supabaseClient.from('responses').select('*').eq('form_id', form.id).order('submitted_at', { ascending: false }).range(offset, offset + limit - 1);
       if (error) throw error;
-      
+
       const newSubmissions = data.map(row => ({ submittedAt: row.submitted_at, data: row.data }));
       form.submissions = (form.submissions || []).concat(newSubmissions);
       this.renderResponses(true);
-    } catch(e) {
+    } catch (e) {
       console.error(e);
-      if(this.showToast) this.showToast('حدث خطأ أثناء تحميل المزيد', 'error');
+      if (this.showToast) this.showToast('حدث خطأ أثناء تحميل المزيد', 'error');
     } finally {
-      if(btn) { btn.innerText = 'تحميل المزيد'; btn.disabled = false; }
+      if (btn) { btn.innerText = 'تحميل المزيد'; btn.disabled = false; }
     }
   },
 
   async renderResponses(skipFetch = false) {
     const form = this.getForm();
-    if(!form) return this.navigate('dashboard');
+    if (!form) return this.navigate('dashboard');
 
-    if(!skipFetch) {
+    if (!skipFetch) {
       this.setupResponsesRealtime(form.id);
     }
 
     const thead = document.getElementById('responses-table-head');
     const tbody = document.getElementById('responses-table-body');
-    
-    if(!skipFetch) {
+
+    if (!skipFetch) {
       document.getElementById('responses-count-val').innerText = '...';
       tbody.innerHTML = `<tr><td colspan="10" style="padding:40px; text-align:center; color:var(--primary); font-size:1.2rem;">جاري جلب الردود من السحابة...</td></tr>`;
     }
 
     let submissions = form.submissions || [];
     const limit = 50;
-    if(!skipFetch) {
+    if (!skipFetch) {
       try {
         const { data, error, count } = await supabaseClient.from('responses').select('*', { count: 'exact' }).eq('form_id', form.id).order('submitted_at', { ascending: false }).range(0, limit - 1);
         if (error) throw error;
-        
+
         submissions = data.map(row => {
           return { submittedAt: row.submitted_at, data: row.data };
         });
         form.submissions = submissions;
         form.responsesCount = count || submissions.length;
-      } catch(e) {
+      } catch (e) {
         console.error('Failed to fetch responses', e);
         submissions = form.submissions || [];
         form.responsesCount = submissions.length;
@@ -83,7 +83,7 @@ viewResponses(formId) {
     }
 
     document.getElementById('responses-count-val').innerText = form.responsesCount || submissions.length;
-    
+
     const loadMoreContainer = document.getElementById('load-more-container');
     if (loadMoreContainer) {
       if (form.submissions && form.responsesCount && form.submissions.length < form.responsesCount) {
@@ -93,7 +93,7 @@ viewResponses(formId) {
       }
     }
 
-    if(submissions.length === 0) {
+    if (submissions.length === 0) {
       thead.innerHTML = '';
       tbody.innerHTML = `<tr><td style="padding:0; border:none;"><div class="empty-state" style="text-align:center; padding:60px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:1px dashed var(--border); margin:20px 0;"><div style="font-size:50px; margin-bottom:15px; animation: float 3s ease-in-out infinite;">📬</div><h3 style="margin-bottom:10px; color:var(--text);">لا توجد ردود بعد</h3><p style="color:var(--text-secondary); margin:0;">شارك رابط النموذج لتبدأ في جمع الردود وسيتم عرضها هنا مباشرة.</p></div></td></tr>`;
       document.getElementById('responses-charts').innerHTML = `<div class="empty-state" style="grid-column:1/-1; text-align:center; padding:60px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:1px dashed var(--border);"><div style="font-size:50px; margin-bottom:15px; animation: float 3s ease-in-out infinite; animation-delay: 0.5s;">📊</div><h3 style="margin-bottom:10px; color:var(--text);">التحليلات غير متوفرة</h3><p style="color:var(--text-secondary); margin:0;">لا توجد بيانات كافية لإنشاء الرسوم البيانية. انتظر حتى تتلقى بعض الردود.</p></div>`;
@@ -108,7 +108,7 @@ viewResponses(formId) {
       thHtml += `<th style="padding:12px; border:1px solid var(--border); white-space:nowrap;">حالة الحضور</th>`;
     }
     form.fields.forEach(f => {
-      if(f.type !== 'section_break') {
+      if (f.type !== 'section_break') {
         thHtml += `<th style="padding:12px; border:1px solid var(--border); white-space:nowrap;">${this.escape(f.label)}</th>`;
       }
     });
@@ -121,18 +121,18 @@ viewResponses(formId) {
     submissions.forEach(sub => {
       const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-';
       tbHtml += `<tr><td style="padding:10px; border:1px solid var(--border); white-space:nowrap;">${dateStr}</td>`;
-      
+
       if (form.enableTicketing) {
         const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
         if (attended) attendedCount++;
-        const badge = attended 
-          ? `<span style="background:rgba(16, 185, 129, 0.15); color:#10b981; padding:4px 8px; border-radius:12px; font-size:0.85rem; font-weight:bold;">✅ حضر</span>` 
+        const badge = attended
+          ? `<span style="background:rgba(16, 185, 129, 0.15); color:#10b981; padding:4px 8px; border-radius:12px; font-size:0.85rem; font-weight:bold;">✅ حضر</span>`
           : `<span style="background:rgba(100, 116, 139, 0.15); color:#64748b; padding:4px 8px; border-radius:12px; font-size:0.85rem; font-weight:bold;">⏳ لم يحضر</span>`;
         tbHtml += `<td style="padding:10px; border:1px solid var(--border); text-align:center;">${badge}</td>`;
       }
 
       form.fields.forEach(f => {
-        if(f.type !== 'section_break') {
+        if (f.type !== 'section_break') {
           let val = sub.data[f.label];
           // skip internal keys
           if (val === undefined) val = '-';
@@ -184,16 +184,16 @@ viewResponses(formId) {
   async renderCharts(form, submissions) {
     const chartsContainer = document.getElementById('responses-charts');
     chartsContainer.innerHTML = ''; // Clear previous charts
-    
+
     // Lazy load Chart.js if needed
     if (typeof Chart === 'undefined') {
       chartsContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary);">جاري تحميل الرسوم البيانية...</div>';
       await App.loadScript('https://cdn.jsdelivr.net/npm/chart.js');
       chartsContainer.innerHTML = '';
     }
-    
+
     // Destroy existing Chart instances to prevent memory leaks and hover glitches
-    if(window.responseCharts) {
+    if (window.responseCharts) {
       window.responseCharts.forEach(c => c.destroy());
     }
     window.responseCharts = [];
@@ -202,14 +202,14 @@ viewResponses(formId) {
     const fieldsToChart = form.fields.filter(f => chartableTypes.includes(f.type) || chartableTypes.includes(f.originalType));
 
     // Time Statistics Chart (Timeline)
-    if(submissions.length > 0) {
+    if (submissions.length > 0) {
       const timeCard = document.createElement('div');
       timeCard.className = 'stat-card';
       timeCard.style.gridColumn = '1 / -1'; // Span full width
       timeCard.style.display = 'flex';
       timeCard.style.flexDirection = 'column';
       timeCard.style.alignItems = 'center';
-      
+
       const timeTitle = document.createElement('h3');
       timeTitle.innerText = 'إحصائيات الردود بمرور الوقت';
       timeTitle.style.marginBottom = '15px';
@@ -221,12 +221,12 @@ viewResponses(formId) {
       timeCanvasWrapper.style.position = 'relative';
       timeCanvasWrapper.style.width = '100%';
       timeCanvasWrapper.style.height = '300px';
-      
+
       const timeCanvas = document.createElement('canvas');
       timeCanvas.id = 'chart-timeline';
       timeCanvasWrapper.appendChild(timeCanvas);
       timeCard.appendChild(timeCanvasWrapper);
-      
+
       chartsContainer.appendChild(timeCard);
 
       // Aggregate data by date
@@ -271,7 +271,7 @@ viewResponses(formId) {
       window.responseCharts.push(timeChart);
     }
 
-    if(fieldsToChart.length === 0) {
+    if (fieldsToChart.length === 0) {
       const msg = document.createElement('div');
       msg.style.gridColumn = '1/-1';
       msg.style.textAlign = 'center';
@@ -289,7 +289,7 @@ viewResponses(formId) {
       card.style.display = 'flex';
       card.style.flexDirection = 'column';
       card.style.alignItems = 'center';
-      
+
       const title = document.createElement('h3');
       title.innerText = field.label;
       title.style.marginBottom = '15px';
@@ -302,12 +302,12 @@ viewResponses(formId) {
       canvasWrapper.style.width = '100%';
       // For mobile responsiveness, ensure it has a min-height
       canvasWrapper.style.minHeight = '250px';
-      
+
       const canvas = document.createElement('canvas');
       canvas.id = `chart-${field.id || index}`;
       canvasWrapper.appendChild(canvas);
       card.appendChild(canvasWrapper);
-      
+
       chartsContainer.appendChild(card);
 
       // Aggregate data
@@ -316,8 +316,8 @@ viewResponses(formId) {
 
       submissions.forEach(sub => {
         let val = sub.data[field.label];
-        if(val) {
-          if(field.type === 'multiple_choice' && Array.isArray(val)) {
+        if (val) {
+          if (field.type === 'multiple_choice' && Array.isArray(val)) {
             val.forEach(v => {
               counts[v] = (counts[v] || 0) + 1;
               totalAnswers++;
@@ -329,7 +329,7 @@ viewResponses(formId) {
         }
       });
 
-      if(totalAnswers === 0) {
+      if (totalAnswers === 0) {
         canvasWrapper.innerHTML = `<p style="text-align:center; color:var(--text-tertiary); margin-top:50px;">لا توجد إجابات بعد</p>`;
         return;
       }
@@ -338,13 +338,13 @@ viewResponses(formId) {
       const data = Object.values(counts);
 
       const colors = [
-        '#4f46e5', '#10b981', '#f59e0b', '#ef4444', 
+        '#4f46e5', '#10b981', '#f59e0b', '#ef4444',
         '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6'
       ];
 
       let type = 'pie';
-      if(field.type === 'multiple_choice' || field.type === 'linear_scale') type = 'bar';
-      if(field.type === 'dropdown') type = 'doughnut';
+      if (field.type === 'multiple_choice' || field.type === 'linear_scale') type = 'bar';
+      if (field.type === 'dropdown') type = 'doughnut';
 
       const ctx = canvas.getContext('2d');
       const newChart = new Chart(ctx, {
@@ -379,54 +379,54 @@ viewResponses(formId) {
   async exportResponsesExcel() {
     const btn = document.querySelector('#page-responses .builder-toolbar .btn-ghost');
     const originalText = btn ? btn.innerHTML : 'تصدير Excel';
-    if(btn) btn.innerHTML = 'جاري التصدير...';
+    if (btn) btn.innerHTML = 'جاري التصدير...';
 
     const form = this.getForm();
-    if(!form || !form.submissions || form.submissions.length === 0) {
+    if (!form || !form.submissions || form.submissions.length === 0) {
       this.showToast('لا توجد ردود لتصديرها', 'error');
-      if(btn) btn.innerHTML = originalText;
+      if (btn) btn.innerHTML = originalText;
       return;
     }
 
     // Lazy load XLSX if needed
-    if(typeof XLSX === 'undefined') {
+    if (typeof XLSX === 'undefined') {
       try {
         await App.loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
-      } catch(e) {
+      } catch (e) {
         this.showToast('فشل تحميل مكتبة التصدير', 'error');
-        if(btn) btn.innerHTML = originalText;
+        if (btn) btn.innerHTML = originalText;
         return;
       }
     }
 
     // Prepare data
     const data = [];
-    
+
     // Headers
     const headers = ['تاريخ الإرسال'];
     if (form.enableTicketing) {
       headers.push('حالة الحضور');
     }
-    form.fields.forEach(f => { 
-      if(f.type !== 'section_break') headers.push(f.label); 
+    form.fields.forEach(f => {
+      if (f.type !== 'section_break') headers.push(f.label);
     });
     data.push(headers);
 
     // Rows
     form.submissions.forEach(sub => {
       const row = [sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : ''];
-      
+
       if (form.enableTicketing) {
         const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
         row.push(attended ? 'حضر' : 'لم يحضر');
       }
 
       form.fields.forEach(f => {
-        if(f.type !== 'section_break') {
+        if (f.type !== 'section_break') {
           let val = sub.data[f.label] || '';
-          if(typeof val === 'string' && val.startsWith('data:image')) {
+          if (typeof val === 'string' && val.startsWith('data:image')) {
             val = '[صورة مرفقة - غير مدعوم في الإكسيل]';
-          } else if(typeof val === 'string' && val.startsWith('http')) {
+          } else if (typeof val === 'string' && val.startsWith('http')) {
             // Leave it as a URL so it's clickable in Excel
           }
           row.push(val);
@@ -444,23 +444,23 @@ viewResponses(formId) {
 
     // Download
     XLSX.writeFile(wb, `responses_${form.title.replace(/\s+/g, '_')}.xlsx`);
-    if(btn) btn.innerHTML = originalText;
+    if (btn) btn.innerHTML = originalText;
   },
 
   filterResponses(query) {
     const tbody = document.getElementById('responses-table-body');
-    if(!tbody) return;
-    
+    if (!tbody) return;
+
     const rows = tbody.querySelectorAll('tr');
     const q = query.toLowerCase().trim();
-    
+
     let visibleCount = 0;
     rows.forEach(row => {
-      if(row.querySelector('.empty-state')) return;
-      
+      if (row.querySelector('.empty-state')) return;
+
       // Use textContent instead of innerText for much better performance
       const text = row.textContent.toLowerCase();
-      if(!q || text.includes(q)) {
+      if (!q || text.includes(q)) {
         row.style.display = '';
         visibleCount++;
       } else {
@@ -479,123 +479,230 @@ viewResponses(formId) {
   },
 
   async exportResponsesPDF() {
-    const btn = document.querySelector('button[onclick="App.exportResponsesPDF()"]');
-    const originalText = btn ? btn.innerHTML : 'تصدير PDF';
-    if(btn) { btn.innerHTML = 'جاري التصدير...'; btn.disabled = true; }
-    
-    this.showToast('جاري تجهيز وتنزيل ملف الـ PDF...', 'info');
-    
     const form = this.getForm();
-    if(!form || !form.submissions || form.submissions.length === 0) {
+    if (!form || !form.submissions || form.submissions.length === 0) {
       this.showToast('لا توجد ردود لتصديرها', 'error');
-      if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
       return;
     }
 
-    try {
-      // Load html2pdf dynamically if not present
-      if(!window.html2pdf) {
-        await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
-      }
-
-      // Build a clean HTML document string that html2pdf will render perfectly
-      let html = `
-        <div style="direction:rtl; font-family: 'Tajawal', Arial, sans-serif; padding:30px; background:#fff; color:#000;">
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
-            th { background: #4f46e5; color: #fff; padding: 10px; font-weight: bold; border: 1px solid #ddd; }
-            td { padding: 8px; border: 1px solid #ddd; text-align: right; }
-            tr:nth-child(even) { background: #f9fafb; }
-            .badge { padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.8rem; }
-            .badge-yes { background: #d1fae5; color: #065f46; }
-            .badge-no { background: #f1f5f9; color: #475569; }
-          </style>
-          
-          <h1 style="text-align:center; color:#4f46e5; margin-bottom:10px; font-size:1.8rem;">${this.escape(form.title)}</h1>
-          <p style="text-align:center; color:#666; margin-bottom:25px; font-size:0.95rem;">
-            إجمالي الردود: <strong>${form.submissions.length}</strong> &nbsp;|&nbsp; تاريخ التصدير: <strong>${new Date().toLocaleDateString('ar-EG')}</strong>
-          </p>
-      `;
-
-      // Embed charts as base64 images
-      const originalCanvases = document.getElementById('page-responses').querySelectorAll('canvas');
-      if(originalCanvases.length > 0) {
-        html += `<div style="display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-bottom:25px;">`;
-        originalCanvases.forEach(canvas => {
-          try {
-            const imgSrc = canvas.toDataURL('image/png');
-            html += `<div style="flex:1; min-width:250px; max-width:45%; text-align:center;">
-              <img src="${imgSrc}" style="width:100%; max-height:250px; object-fit:contain; border:1px solid #eee; border-radius:8px;">
-            </div>`;
-          } catch(e) {}
-        });
-        html += `</div>`;
-      }
-
-      // Build table
-      html += `<table><thead><tr>`;
-      html += `<th style="width:30px; text-align:center;">#</th><th>تاريخ الإرسال</th>`;
-      
-      if(form.enableTicketing) {
-        html += `<th style="text-align:center;">الحضور</th>`;
-      }
-      form.fields.forEach(f => {
-        if(f.type !== 'section_break') {
-          html += `<th>${this.escape(f.label)}</th>`;
-        }
-      });
-      html += `</tr></thead><tbody>`;
-      
-      // Build rows
-      form.submissions.forEach((sub, idx) => {
-        const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-';
-        html += `<tr>`;
-        html += `<td style="text-align:center; font-weight:bold;">${idx + 1}</td>`;
-        html += `<td>${dateStr}</td>`;
-        
-        if(form.enableTicketing) {
-          const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
-          html += `<td style="text-align:center;"><span class="badge ${attended ? 'badge-yes' : 'badge-no'}">${attended ? '✅ حضر' : '⏳ لم يحضر'}</span></td>`;
-        }
-
-        form.fields.forEach(f => {
-          if(f.type !== 'section_break') {
-            let val = sub.data[f.label];
-            if(val === undefined || val === null) val = '-';
-            
-            if((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
-              html += `<td style="text-align:center;"><img src="${val}" style="max-width:50px; max-height:50px; border-radius:4px;"></td>`;
-            } else {
-              html += `<td>${this.escape(val)}</td>`;
-            }
-          }
-        });
-        html += `</tr>`;
-      });
-      html += `</tbody></table></div>`;
-
-      // Setup html2pdf options
-      const opt = {
-        margin:       10,
-        filename:     `تقرير_ردود_${form.title.replace(/\s+/g, '_')}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
-        pagebreak:    { mode: ['css', 'legacy'] }
-      };
-      
-      // Generating the PDF directly from the HTML string triggers a reliable download
-      // which works properly on iOS/Android native environments and webviews.
-      window.html2pdf().set(opt).from(html).save().then(() => {
-        if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
-        this.showToast('تم تصدير ملف PDF بنجاح ✅', 'success');
-      });
-
-    } catch(err) {
-      console.error('PDF Export Error:', err);
-      this.showToast('حدث خطأ أثناء التصدير', 'error');
-      if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
+    // Build a complete standalone HTML page for printing
+    let html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>تقرير ردود - ${this.escape(form.title)}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Tajawal', 'Segoe UI', Arial, sans-serif;
+      direction: rtl;
+      background: #fff;
+      color: #1a1a2e;
+      padding: 30px;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
+    .report-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #4f46e5;
+    }
+    .report-header h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #4f46e5;
+      margin-bottom: 8px;
+    }
+    .report-header .meta {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .report-header .meta span {
+      display: inline-block;
+      margin: 0 10px;
+      padding: 4px 12px;
+      background: #f0f0ff;
+      border-radius: 20px;
+      font-weight: 700;
+      color: #4f46e5;
+    }
+    .charts-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+    .charts-section img {
+      max-width: 48%;
+      max-height: 250px;
+      object-fit: contain;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+    thead th {
+      background: #4f46e5 !important;
+      color: #fff !important;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      border: 1px solid #3730a3;
+      text-align: center;
+    }
+    tbody td {
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      text-align: right;
+      vertical-align: middle;
+    }
+    tbody tr:nth-child(even) {
+      background: #f8fafc !important;
+    }
+    tbody tr:hover {
+      background: #eef2ff !important;
+    }
+    .col-num {
+      text-align: center;
+      font-weight: 700;
+      color: #4f46e5;
+      width: 40px;
+    }
+    .col-date {
+      white-space: nowrap;
+      direction: ltr;
+      text-align: right;
+      font-size: 0.8rem;
+    }
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #999;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+    .badge-attended {
+      background: rgba(16,185,129,0.15);
+      color: #059669;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .badge-absent {
+      background: rgba(100,116,139,0.15);
+      color: #64748b;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .img-thumb {
+      max-width: 60px;
+      max-height: 60px;
+      border-radius: 4px;
+      display: block;
+      margin: 0 auto;
+    }
+    @media print {
+      body { padding: 15px; }
+      thead { display: table-header-group; }
+      tr { page-break-inside: avoid; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align:center; margin-bottom:20px; padding:15px; background:#f0f0ff; border-radius:12px;">
+    <p style="margin-bottom:10px; font-weight:700; color:#4f46e5;">اضغط Ctrl+P ثم اختر "Save as PDF" أو "حفظ كـ PDF" للتصدير</p>
+    <button onclick="window.print()" style="padding:10px 30px; background:#4f46e5; color:#fff; border:none; border-radius:8px; font-family:Tajawal; font-size:1rem; font-weight:700; cursor:pointer;">🖨️ طباعة / تصدير PDF</button>
+  </div>
+
+  <div class="report-header">
+    <h1>${this.escape(form.title)}</h1>
+    <div class="meta">
+      <span>إجمالي الردود: ${form.submissions.length}</span>
+      <span>تاريخ التصدير: ${new Date().toLocaleDateString('ar-EG')}</span>
+    </div>
+  </div>`;
+
+    // Charts as images
+    const canvases = document.getElementById('page-responses').querySelectorAll('canvas');
+    if (canvases.length > 0) {
+      html += `<div class="charts-section">`;
+      canvases.forEach(canvas => {
+        try {
+          html += `<img src="${canvas.toDataURL('image/png')}">`;
+        } catch (e) { }
+      });
+      html += `</div>`;
+    }
+
+    // Table
+    html += `<table><thead><tr>`;
+    html += `<th>#</th><th>تاريخ الإرسال</th>`;
+    if (form.enableTicketing) html += `<th>الحضور</th>`;
+    form.fields.forEach(f => {
+      if (f.type !== 'section_break') {
+        html += `<th>${this.escape(f.label)}</th>`;
+      }
+    });
+    html += `</tr></thead><tbody>`;
+
+    form.submissions.forEach((sub, idx) => {
+      html += `<tr>`;
+      html += `<td class="col-num">${idx + 1}</td>`;
+      html += `<td class="col-date">${sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-'}</td>`;
+
+      if (form.enableTicketing) {
+        const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
+        html += `<td style="text-align:center;"><span class="${attended ? 'badge-attended' : 'badge-absent'}">${attended ? '✅ حضر' : '⏳ لم يحضر'}</span></td>`;
+      }
+
+      form.fields.forEach(f => {
+        if (f.type !== 'section_break') {
+          let val = sub.data[f.label];
+          if (val === undefined || val === null) val = '-';
+          if ((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
+            html += `<td style="text-align:center;"><img class="img-thumb" src="${val}"></td>`;
+          } else {
+            html += `<td>${this.escape(val)}</td>`;
+          }
+        }
+      });
+      html += `</tr>`;
+    });
+
+    html += `</tbody></table>`;
+    html += `<div class="footer">تم إنشاء هذا التقرير بواسطة Menoufia Forms | ${new Date().toLocaleString('ar-EG')}</div>`;
+    html += `</body></html>`;
+
+    // Open in new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      this.showToast('يرجى السماح بالنوافذ المنبثقة (Pop-ups) في المتصفح', 'error');
+      return;
+    }
+    printWindow.document.write(html);
+    printWindow.document.close();
+
+    // Wait for fonts and images to load then trigger print
+    printWindow.onload = function () {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 500);
+    };
+
+    this.showToast('تم فتح نافذة التصدير - اختر "Save as PDF" من نافذة الطباعة', 'success');
   }
 });
