@@ -481,7 +481,7 @@ viewResponses(formId) {
   async exportResponsesPDF() {
     const btn = document.querySelector('button[onclick="App.exportResponsesPDF()"]');
     const originalText = btn ? btn.innerHTML : 'تصدير PDF';
-    if(btn) btn.innerHTML = 'جاري التصدير...';
+    if(btn) { btn.innerHTML = 'جاري التصدير...'; btn.disabled = true; }
     
     this.showToast('جاري تجهيز ملف الـ PDF...', 'info');
     
@@ -489,80 +489,105 @@ viewResponses(formId) {
       await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
     }
     
-    const element = document.getElementById('page-responses').cloneNode(true);
-    
-    // Remove unwanted UI elements from PDF
-    const toolbar = element.querySelector('.builder-toolbar');
-    if(toolbar) toolbar.style.display = 'none';
-    const searchBar = element.querySelector('#responses-search-input');
-    if(searchBar && searchBar.parentElement.parentElement) {
-      searchBar.parentElement.parentElement.style.display = 'none';
-    }
-    const loadMoreBtn = element.querySelector('#load-more-container');
-    if(loadMoreBtn) loadMoreBtn.style.display = 'none';
-    
-    // Fix table overflow and dark mode issues for PDF
-    element.style.background = '#ffffff'; // Force white background
-    element.style.color = '#000000'; // Force black text
-    element.classList.remove('dark-mode'); 
-    
-    const tables = element.querySelectorAll('table');
-    tables.forEach(table => {
-      table.style.color = '#000000';
-      table.style.width = '100%';
-      const cells = table.querySelectorAll('th, td');
-      cells.forEach(cell => {
-         cell.style.color = '#000000';
-         cell.style.borderColor = '#dddddd';
-         if (cell.tagName === 'TH') {
-             cell.style.backgroundColor = '#f3f4f6';
-         } else {
-             cell.style.backgroundColor = '#ffffff';
-         }
-      });
-    });
-
-    const rows = element.querySelectorAll('tr');
-    rows.forEach(tr => {
-       tr.style.pageBreakInside = 'avoid';
-    });
-
-    const responsiveWrappers = element.querySelectorAll('.table-responsive, [style*="overflow"]');
-    responsiveWrappers.forEach(wrapper => {
-      wrapper.style.overflow = 'visible';
-    });
-    
-    // Replace canvases with images
-    const originalCanvases = document.getElementById('page-responses').querySelectorAll('canvas');
-    const clonedCanvases = element.querySelectorAll('canvas');
-    originalCanvases.forEach((canvas, i) => {
-        if(clonedCanvases[i]) {
-          const img = document.createElement('img');
-          img.src = canvas.toDataURL('image/png');
-          img.style.width = '100%';
-          img.style.maxHeight = '300px';
-          img.style.objectFit = 'contain';
-          clonedCanvases[i].parentNode.replaceChild(img, clonedCanvases[i]);
-        }
-    });
-
     const form = this.getForm();
+    if(!form || !form.submissions || form.submissions.length === 0) {
+      this.showToast('لا توجد ردود لتصديرها', 'error');
+      if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
+      return;
+    }
+
+    // Build a clean HTML document for PDF instead of cloning the live DOM
+    let html = `
+      <div style="direction:rtl; font-family: 'Tajawal', Arial, sans-serif; padding:20px; background:#fff; color:#000;">
+        <h1 style="text-align:center; color:#4f46e5; margin-bottom:5px; font-size:1.5rem;">${this.escape(form.title)}</h1>
+        <p style="text-align:center; color:#666; margin-bottom:20px; font-size:0.9rem;">تقرير الردود - إجمالي: ${form.submissions.length} رد</p>
+    `;
+
+    // Convert chart canvases to images
+    const originalCanvases = document.getElementById('page-responses').querySelectorAll('canvas');
+    if(originalCanvases.length > 0) {
+      html += `<div style="display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-bottom:25px;">`;
+      originalCanvases.forEach(canvas => {
+        try {
+          const imgSrc = canvas.toDataURL('image/png');
+          html += `<div style="flex:1; min-width:250px; max-width:45%; text-align:center;">
+            <img src="${imgSrc}" style="width:100%; max-height:250px; object-fit:contain; border:1px solid #eee; border-radius:8px;">
+          </div>`;
+        } catch(e) { /* skip canvas if toDataURL fails */ }
+      });
+      html += `</div>`;
+    }
+
+    // Build table
+    html += `<table style="width:100%; border-collapse:collapse; text-align:right; font-size:0.8rem;">`;
+    
+    // Headers
+    html += `<thead><tr style="background:#f3f4f6;">`;
+    html += `<th style="padding:8px 6px; border:1px solid #ddd; white-space:nowrap; font-weight:bold;">تاريخ الإرسال</th>`;
+    if(form.enableTicketing) {
+      html += `<th style="padding:8px 6px; border:1px solid #ddd; white-space:nowrap; font-weight:bold;">حالة الحضور</th>`;
+    }
+    form.fields.forEach(f => {
+      if(f.type !== 'section_break') {
+        html += `<th style="padding:8px 6px; border:1px solid #ddd; white-space:nowrap; font-weight:bold;">${this.escape(f.label)}</th>`;
+      }
+    });
+    html += `</tr></thead>`;
+    
+    // Rows
+    html += `<tbody>`;
+    form.submissions.forEach(sub => {
+      const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-';
+      html += `<tr>`;
+      html += `<td style="padding:6px; border:1px solid #ddd; white-space:nowrap; background:#fff; color:#000;">${dateStr}</td>`;
+      
+      if(form.enableTicketing) {
+        const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
+        html += `<td style="padding:6px; border:1px solid #ddd; text-align:center; background:#fff; color:#000;">${attended ? '✅ حضر' : '⏳ لم يحضر'}</td>`;
+      }
+
+      form.fields.forEach(f => {
+        if(f.type !== 'section_break') {
+          let val = sub.data[f.label];
+          if(val === undefined) val = '-';
+          if((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
+            html += `<td style="padding:6px; border:1px solid #ddd; text-align:center; background:#fff;"><img src="${val}" style="max-width:60px; max-height:60px; border-radius:4px;"></td>`;
+          } else {
+            html += `<td style="padding:6px; border:1px solid #ddd; background:#fff; color:#000;">${this.escape(val)}</td>`;
+          }
+        }
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody></table></div>`;
+
+    // Create a temporary container in the DOM (required by html2pdf)
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '0';
+    tempContainer.style.width = '1200px';
+    tempContainer.innerHTML = html;
+    document.body.appendChild(tempContainer);
+
     const opt = {
       margin:       10,
       filename:     `تقرير_ردود_${form.title.replace(/\s+/g, '_')}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, windowWidth: 1200 },
+      image:        { type: 'jpeg', quality: 0.95 },
+      html2canvas:  { scale: 2, useCORS: true, width: 1200, windowWidth: 1200, backgroundColor: '#ffffff' },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
       pagebreak:    { mode: ['css', 'legacy'] }
     };
     
-    // Render and download
-    window.html2pdf().set(opt).from(element).save().then(() => {
-      if(btn) btn.innerHTML = originalText;
+    window.html2pdf().set(opt).from(tempContainer).save().then(() => {
+      document.body.removeChild(tempContainer);
+      if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
+      this.showToast('تم تصدير ملف PDF بنجاح ✅', 'success');
     }).catch(err => {
       console.error('PDF Export Error:', err);
-      if(this.showToast) this.showToast('حدث خطأ أثناء التصدير', 'error');
-      if(btn) btn.innerHTML = originalText;
+      document.body.removeChild(tempContainer);
+      if(this.showToast) this.showToast('حدث خطأ أثناء التصدير: ' + err.message, 'error');
+      if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
     });
   }
 });
