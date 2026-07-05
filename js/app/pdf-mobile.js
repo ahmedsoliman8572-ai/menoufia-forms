@@ -31,17 +31,21 @@
     }
 
     // Build the exact same HTML page as the desktop method
+    // Use <link> instead of @import for reliable font loading on mobile
     let html = `<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=1024">
   <title>تقرير ردود - ${app.escape(form.title)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Tajawal', 'Segoe UI', Arial, sans-serif;
+      font-family: 'Tajawal', 'Segoe UI', 'Arial', sans-serif;
       direction: rtl;
       background: #fff;
       color: #1a1a2e;
@@ -49,6 +53,10 @@
       min-width: 1024px;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
+    }
+    /* Hide content until font is ready */
+    body.fonts-loading {
+      visibility: hidden;
     }
     .report-header {
       text-align: center;
@@ -163,16 +171,17 @@
     @media print {
       @page { size: landscape; }
       body { padding: 15px; min-width: 1024px !important; }
+      body.fonts-loading { visibility: visible; }
       thead { display: table-header-group; }
       tr { page-break-inside: avoid; }
       .no-print { display: none !important; }
     }
   </style>
 </head>
-<body>
+<body class="fonts-loading">
   <div class="no-print" style="text-align:center; margin-bottom:20px; padding:15px; background:#f0f0ff; border-radius:12px;">
     <p style="margin-bottom:10px; font-weight:700; color:#4f46e5;">اضغط على الزر أدناه أو استخدم "مشاركة" ثم "طباعة" لحفظ كـ PDF</p>
-    <button onclick="window.print()" style="padding:10px 30px; background:#4f46e5; color:#fff; border:none; border-radius:8px; font-family:Tajawal; font-size:1rem; font-weight:700; cursor:pointer;">🖨️ طباعة / تصدير PDF</button>
+    <button onclick="window.print()" style="padding:10px 30px; background:#4f46e5; color:#fff; border:none; border-radius:8px; font-family:Tajawal,sans-serif; font-size:1rem; font-weight:700; cursor:pointer;">🖨️ طباعة / تصدير PDF</button>
   </div>
 
   <div class="report-header">
@@ -232,21 +241,52 @@
 
     html += `</tbody></table>`;
     html += `<div class="footer">تم إنشاء هذا التقرير بواسطة Menoufia Forms | ${new Date().toLocaleString('ar-EG')}</div>`;
-    html += `</body></html>`;
 
-    // ── Deliver via window.open + document.write (works on mobile) ──
+    // Font-loading script: waits for Tajawal to load, then reveals content
+    html += `
+<script>
+(function() {
+  // Wait for fonts to be ready, then show the page
+  function showPage() {
+    document.body.classList.remove('fonts-loading');
+  }
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(showPage);
+  } else {
+    // Fallback for browsers without FontFaceSet API
+    setTimeout(showPage, 1500);
+  }
+  // Safety timeout — show page after 3s no matter what
+  setTimeout(showPage, 3000);
+})();
+</script>
+</body></html>`;
+
+    // ── Deliver via Blob URL for proper charset, fall back to document.write ──
     try {
-      const win = window.open('', '_blank');
+      // Try Blob URL first — it handles charset correctly
+      const blob = new Blob([html], { type: 'text/html; charset=UTF-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      const win = window.open(blobUrl, '_blank');
       if (win) {
-        win.document.open();
-        win.document.write(html);
-        win.document.close();
+        // Clean up the blob URL after a delay
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
         app.showToast('تم فتح نافذة التصدير', 'success');
       } else {
-        // Fallback: navigate current page (user can press back to return)
-        document.open();
-        document.write(html);
-        document.close();
+        // Blob URL blocked — fall back to document.write
+        URL.revokeObjectURL(blobUrl);
+        const win2 = window.open('', '_blank');
+        if (win2) {
+          win2.document.open('text/html', 'replace');
+          win2.document.write(html);
+          win2.document.close();
+          app.showToast('تم فتح نافذة التصدير', 'success');
+        } else {
+          // Last resort: replace current page
+          document.open('text/html', 'replace');
+          document.write(html);
+          document.close();
+        }
       }
     } catch (err) {
       console.error(err);
