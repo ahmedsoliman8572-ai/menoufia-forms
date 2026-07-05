@@ -444,7 +444,7 @@ Object.assign(window.App, {
     if(!form) return;
     
     if (!form.settings) form.settings = {};
-    const settingProps = ['logoBase64', 'coverImageBase64', 'themeColor', 'backgroundStyle', 'darkModeEnabled', 'thankYouMessage', 'redirectUrl', 'allowResubmit', 'limitOneResponse', 'isQuizMode', 'maxResponses', 'deadline', 'enableTicketing'];
+    const settingProps = ['logoBase64', 'coverImageBase64', 'themeColor', 'backgroundStyle', 'darkModeEnabled', 'thankYouMessage', 'redirectUrl', 'allowResubmit', 'limitOneResponse', 'isQuizMode', 'allowQuizReview', 'maxResponses', 'deadline', 'enableTicketing'];
     settingProps.forEach(p => {
       if (form[p] !== undefined) form.settings[p] = form[p];
     });
@@ -546,6 +546,8 @@ openFormSettings() {
     // Quiz mode settings
     document.getElementById('setting-quiz-mode').checked = form.isQuizMode || false;
     document.getElementById('setting-quiz-time').value = form.quizTimeLimit || '';
+    const quizReviewEl = document.getElementById('setting-quiz-review');
+    if (quizReviewEl) quizReviewEl.checked = form.allowQuizReview || false;
     const quizTimeSettings = document.getElementById('quiz-time-settings');
     if (quizTimeSettings) quizTimeSettings.style.display = form.isQuizMode ? 'block' : 'none';
     document.getElementById('setting-max-responses').value = form.maxResponses || '';
