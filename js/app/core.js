@@ -616,7 +616,7 @@ Object.assign(window.App, {
 
   async loadRolePermissions() {
     try {
-      const { data } = await supabaseClient.from('forms').select('*').eq('id', 'role_permissions').single();
+      const { data } = await supabaseClient.from('forms').select('*').eq('title', 'Role Permissions Configuration').maybeSingle();
       if (data && data.settings && data.settings.rolePermissions) {
         this.state.rolePermissions = data.settings.rolePermissions;
       }
