@@ -501,6 +501,37 @@ viewResponses(formId) {
     const loadMoreBtn = element.querySelector('#load-more-container');
     if(loadMoreBtn) loadMoreBtn.style.display = 'none';
     
+    // Fix table overflow and dark mode issues for PDF
+    element.style.background = '#ffffff'; // Force white background
+    element.style.color = '#000000'; // Force black text
+    element.classList.remove('dark-mode'); 
+    
+    const tables = element.querySelectorAll('table');
+    tables.forEach(table => {
+      table.style.color = '#000000';
+      table.style.width = '100%';
+      const cells = table.querySelectorAll('th, td');
+      cells.forEach(cell => {
+         cell.style.color = '#000000';
+         cell.style.borderColor = '#dddddd';
+         if (cell.tagName === 'TH') {
+             cell.style.backgroundColor = '#f3f4f6';
+         } else {
+             cell.style.backgroundColor = '#ffffff';
+         }
+      });
+    });
+
+    const rows = element.querySelectorAll('tr');
+    rows.forEach(tr => {
+       tr.style.pageBreakInside = 'avoid';
+    });
+
+    const responsiveWrappers = element.querySelectorAll('.table-responsive, [style*="overflow"]');
+    responsiveWrappers.forEach(wrapper => {
+      wrapper.style.overflow = 'visible';
+    });
+    
     // Replace canvases with images
     const originalCanvases = document.getElementById('page-responses').querySelectorAll('canvas');
     const clonedCanvases = element.querySelectorAll('canvas');
@@ -520,8 +551,9 @@ viewResponses(formId) {
       margin:       10,
       filename:     `تقرير_ردود_${form.title.replace(/\s+/g, '_')}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      html2canvas:  { scale: 2, useCORS: true, windowWidth: 1200 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+      pagebreak:    { mode: ['css', 'legacy'] }
     };
     
     // Render and download
