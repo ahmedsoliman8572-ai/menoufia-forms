@@ -35,14 +35,12 @@ Object.assign(window.App, {
     if (!this.state.forms || this.state.forms.length === 0) {
       grid.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-          <h3 style="margin:0;">النماذج الخاصة بك</h3>
-        </div>
-        <div style="text-align:center; padding:60px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:2px dashed var(--border); margin-top:20px; animation: fadeIn 0.5s;">
-          <div style="font-size:4rem; margin-bottom:15px; display:inline-block; animation: float 3s ease-in-out infinite;"></div>
-          <h3 style="margin-bottom:10px; color:var(--text-primary); font-size:1.5rem;">ليس لديك أي نماذج حتى الآن!</h3>
-          <p style="color:var(--text-secondary); margin-bottom:25px; max-width:400px; margin-left:auto; margin-right:auto; line-height:1.6;">قم بإنشاء أول نموذج لك الآن لبدء جمع البيانات والردود بكل سهولة واحترافية.</p>
-          <button class="btn btn-primary" onclick="App.createBlankForm()" style="padding:12px 24px; font-size:1.1rem; box-shadow:0 4px 15px rgba(79,70,229,0.3); border-radius:30px;">
-            <span style="margin-left:8px;"></span> إنشاء نموذج جديد
+        <div class="empty-state" style="text-align:center; padding:60px 20px; max-width:400px; margin:40px auto; background:var(--bg-card); border-radius:var(--radius-lg); border:1px dashed var(--border);">
+          <div style="font-size:60px; margin-bottom:20px; animation: float 3s ease-in-out infinite;">📄</div>
+          <h3 style="margin-bottom:10px; color:var(--text);">لا توجد نماذج بعد</h3>
+          <p style="color:var(--text-secondary); margin-bottom:25px; line-height:1.6;">قم بإنشاء أول نموذج لك للبدء في جمع البيانات والردود بسهولة واحترافية.</p>
+          <button class="btn btn-primary" onclick="App.createBlankForm()" style="box-shadow:0 4px 15px rgba(99, 102, 241, 0.3);">
+            <span>➕</span> إنشاء نموذج جديد
           </button>
         </div>
       `;
@@ -55,26 +53,44 @@ Object.assign(window.App, {
       </div>
     `;
 
+    // Colors for gradients based on index
+    const gradients = [
+      'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+      'linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%)',
+      'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+      'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
+      'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)'
+    ];
+
     html += `<div class="forms-grid">`;
-    this.state.forms.forEach(form => {
+    this.state.forms.forEach((form, idx) => {
       const date = new Date(form.created_at || form.createdAt || Date.now()).toLocaleDateString('ar-EG');
       const responsesCount = form.responses_count || (form.submissions ? form.submissions.length : 0);
+      const bgGradient = gradients[idx % gradients.length];
+      const isActive = (form.fields && form.fields.length > 0);
+      const statusBadge = isActive ? 
+        `<span style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.2); backdrop-filter:blur(4px); color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%;"></span> نشط</span>` : 
+        `<span style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; background:#94a3b8; border-radius:50%;"></span> مسودة</span>`;
+
       html += `
-        <div class="form-card" onclick="App.navigate('builder', {formId: '${form.id}'})" style="position:relative;">
-          ${App.hasPermission('delete') ? `<button class="del-btn-x" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف النموذج نهائياً" style="position:absolute; top:10px; left:10px; width:28px; height:28px; border-radius:50%; background:rgba(239,68,68,0.1); color:var(--danger); border:none; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer; z-index:10; transition:0.2s;" onmouseenter="this.style.background='rgba(239,68,68,0.2)'; this.style.transform='scale(1.1)';" onmouseleave="this.style.background='rgba(239,68,68,0.1)'; this.style.transform='scale(1)';">✕</button>` : ''}
-          <div class="form-card-actions" style="margin-left: 30px;">
+        <div class="form-card" onclick="App.navigate('builder', {formId: '${form.id}'})" style="position:relative; overflow:hidden; padding:0; display:flex; flex-direction:column;">
+          <div style="height:100px; background:${bgGradient}; position:relative; width:100%;">
+            ${statusBadge}
+            ${App.hasPermission('delete') ? `<button class="del-btn-x" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف النموذج نهائياً" style="position:absolute; top:12px; left:12px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,0.2); backdrop-filter:blur(4px); color:white; border:none; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; z-index:10; transition:0.3s;" onmouseenter="this.style.background='rgba(239,68,68,0.9)';" onmouseleave="this.style.background='rgba(0,0,0,0.2)';">✕</button>` : ''}
+          </div>
+          <div class="form-card-actions" style="margin-left: 30px; top:85px;">
             <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">🔗</button>
             <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>
             <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">📊</button>
             <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">👁️</button>
             ${form.enableTicketing ? `<button onclick="event.stopPropagation(); App.copyScannerLink('${form.id}')" title="نسخ رابط المنظمين (الماسح)" style="background:var(--primary-light); color:white;">📷</button>` : ''}
           </div>
-          <div class="form-card-banner">📝</div>
-          <div class="form-card-body">
-            <div class="form-card-title">${this.escape(form.title)}</div>
-            <div class="form-card-meta">
-              <span>${form.fields ? form.fields.length : 0} حقول · ${responsesCount} رد</span>
-              <span>${date}</span>
+          <div class="form-card-body" style="padding:25px 20px 20px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
+            <div class="form-card-title" style="font-size:1.1rem; margin-bottom:15px; font-weight:700;">${this.escape(form.title)}</div>
+            <div class="form-card-meta" style="border-top:1px solid var(--border); padding-top:12px; margin-top:auto;">
+              <span style="display:flex; align-items:center; gap:5px;"><span>📋</span> ${form.fields ? form.fields.length : 0} حقول</span>
+              <span style="display:flex; align-items:center; gap:5px;"><span>📬</span> ${responsesCount} رد</span>
+              <span style="display:flex; align-items:center; gap:5px;"><span>📅</span> ${date}</span>
             </div>
           </div>
         </div>
