@@ -21,11 +21,8 @@ Object.assign(window.App, {
     const container = document.getElementById('qrcode-container');
     if (!container) return;
     
-    container.innerHTML = '<p style="color:var(--text-secondary);font-size:0.9rem;">جاري التحميل...</p>';
-    
+    container.innerHTML = '';
     try {
-      await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js');
-      container.innerHTML = '';
       new QRCode(container, {
         text: url,
         width: 150,
