@@ -340,9 +340,9 @@
 .builder-field-card.selected { border-left-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light), var(--shadow-md); }
 [dir="ltr"] .builder-field-card.selected { border-left-color: var(--border); border-right-color: var(--primary); }
 
-.field-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; }
+.field-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 8px; flex-wrap: wrap; }
 .field-label-edit {
-  flex: 1; font-size: 1.05rem; font-weight: 700; border: none;
+  flex: 1; font-size: 1.05rem; font-weight: 700; border: none; min-width: 150px;
   background: transparent; padding: 4px; border-bottom: 2px dashed transparent;
   transition: 0.25s var(--ease-out); outline: none;
 }
@@ -350,7 +350,7 @@
 .field-type-badge {
   font-size: 0.7rem; background: var(--bg-tertiary); padding: 4px 10px;
   border-radius: var(--radius-full); color: var(--text-tertiary);
-  font-weight: 700; display: flex; align-items: center; gap: 4px; white-space: nowrap;
+  font-weight: 700; display: flex; align-items: center; gap: 4px; white-space: normal; text-align: right; word-break: break-word;
 }
 
 .field-actions {
