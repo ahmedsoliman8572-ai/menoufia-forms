@@ -485,190 +485,84 @@ Object.assign(window.App, {
       return;
     }
 
-    // Build a complete standalone HTML page for printing
-    let html = `<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=1024">
-  <title>تقرير ردود - ${this.escape(form.title)}</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Tajawal', 'Segoe UI', Arial, sans-serif;
-      direction: rtl;
-      background: #fff;
-      color: #1a1a2e;
-      padding: 30px;
-      min-width: 1024px;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    .report-header {
-      text-align: center;
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 3px solid #4f46e5;
-    }
-    .report-header h1 {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #4f46e5;
-      margin-bottom: 8px;
-    }
-    .report-header .meta {
-      font-size: 0.9rem;
-      color: #666;
-    }
-    .report-header .meta span {
-      display: inline-block;
-      margin: 0 10px;
-      padding: 4px 12px;
-      background: #f0f0ff;
-      border-radius: 20px;
-      font-weight: 700;
-      color: #4f46e5;
-    }
-    .charts-section {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-      margin-bottom: 25px;
-    }
-    .charts-section img {
-      max-width: 48%;
-      max-height: 250px;
-      object-fit: contain;
-      border: 1px solid #eee;
-      border-radius: 8px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-      margin-top: 10px;
-    }
-    thead th {
-      background: #4f46e5 !important;
-      color: #fff !important;
-      padding: 10px 8px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      white-space: nowrap;
-      border: 1px solid #3730a3;
-      text-align: center;
-    }
-    tbody td {
-      padding: 8px;
-      border: 1px solid #e2e8f0;
-      text-align: right;
-      vertical-align: middle;
-    }
-    tbody tr:nth-child(even) {
-      background: #f8fafc !important;
-    }
-    tbody tr:hover {
-      background: #eef2ff !important;
-    }
-    .col-num {
-      text-align: center;
-      font-weight: 700;
-      color: #4f46e5;
-      width: 40px;
-    }
-    .col-date {
-      white-space: nowrap;
-      direction: ltr;
-      text-align: right;
-      font-size: 0.8rem;
-    }
-    .footer {
-      margin-top: 30px;
-      text-align: center;
-      font-size: 0.75rem;
-      color: #999;
-      border-top: 1px solid #eee;
-      padding-top: 15px;
-    }
-    .badge-attended {
-      background: rgba(16,185,129,0.15);
-      color: #059669;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-    .badge-absent {
-      background: rgba(100,116,139,0.15);
-      color: #64748b;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-    .img-thumb {
-      max-width: 60px;
-      max-height: 60px;
-      border-radius: 4px;
-      display: block;
-      margin: 0 auto;
-    }
-    @media print {
-      @page { size: landscape; }
-      body { padding: 15px; min-width: 1024px !important; }
-      thead { display: table-header-group; }
-      tr { page-break-inside: avoid; }
-      .no-print { display: none !important; }
-    }
-  </style>
-</head>
-<body>
-  <div class="no-print" style="text-align:center; margin-bottom:20px; padding:15px; background:#f0f0ff; border-radius:12px;">
-    <p style="margin-bottom:10px; font-weight:700; color:#4f46e5;">اضغط Ctrl+P ثم اختر "Save as PDF" أو "حفظ كـ PDF" للتصدير</p>
-    <button onclick="window.print()" style="padding:10px 30px; background:#4f46e5; color:#fff; border:none; border-radius:8px; font-family:Tajawal; font-size:1rem; font-weight:700; cursor:pointer;">🖨️ طباعة / تصدير PDF</button>
-  </div>
+    // Remove old overlay if it exists
+    let oldOverlay = document.getElementById('pdf-preview-overlay');
+    if (oldOverlay) oldOverlay.remove();
 
-  <div class="report-header">
-    <h1>${this.escape(form.title)}</h1>
-    <div class="meta">
-      <span>إجمالي الردود: ${form.submissions.length}</span>
-      <span>تاريخ التصدير: ${new Date().toLocaleDateString('ar-EG')}</span>
-    </div>
-  </div>`;
+    // Create a full-screen overlay for previewing
+    const overlay = document.createElement('div');
+    overlay.id = 'pdf-preview-overlay';
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:#f8fafc; z-index:999999; overflow-y:auto; direction:rtl; font-family:"Tajawal", "Segoe UI", Arial, sans-serif;';
 
-    // Charts as images
+    // Top Action Bar
+    const actionBar = document.createElement('div');
+    actionBar.className = 'no-print';
+    actionBar.style.cssText = 'position:sticky; top:0; background:#fff; padding:15px 20px; box-shadow:0 2px 10px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center; z-index:10; flex-wrap: wrap; gap: 10px;';
+    
+    actionBar.innerHTML = `
+      <h3 style="margin:0; color:#4f46e5; font-weight:800; font-size:1.2rem;">معاينة التقرير للطباعة</h3>
+      <div style="display:flex; gap:10px;">
+        <button id="btn-close-preview" style="padding:8px 15px; background:#e2e8f0; color:#475569; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-family:inherit;">إغلاق المعاينة</button>
+        <button id="btn-download-pdf" style="padding:8px 15px; background:#4f46e5; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-family:inherit; display:flex; align-items:center; gap:5px;">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          تنزيل التقرير PDF
+        </button>
+      </div>
+    `;
+
+    // Content Container (This is exactly what will be converted to PDF)
+    const content = document.createElement('div');
+    content.id = 'pdf-content-wrapper';
+    // min-width: 900px ensures it stays wide and beautiful on mobile, users can just scroll horizontally
+    content.style.cssText = 'padding:30px; background:#fff; margin:20px auto; box-shadow:0 5px 15px rgba(0,0,0,0.05); min-width:900px; max-width:1200px; border-radius:8px;'; 
+
+    let html = `
+      <style>
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+        .pdf-table th { background: #4f46e5; color: #fff; padding: 10px; font-weight: bold; border: 1px solid #ddd; text-align: center; white-space:nowrap; }
+        .pdf-table td { padding: 8px; border: 1px solid #ddd; text-align: right; vertical-align: middle; }
+        .pdf-table tr:nth-child(even) { background: #f9fafb; }
+        .badge-yes { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.8rem; display:inline-block; }
+        .badge-no { background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.8rem; display:inline-block; }
+      </style>
+      <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4f46e5;">
+        <h1 style="font-size: 1.8rem; font-weight: 800; color: #4f46e5; margin-bottom: 8px; font-family:'Tajawal', sans-serif;">${this.escape(form.title)}</h1>
+        <div style="font-size: 0.9rem; color: #666; display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin-top:10px;">
+          <span style="padding:4px 12px; background:#f0f0ff; border-radius:20px; font-weight:700; color:#4f46e5;">إجمالي الردود: ${form.submissions.length}</span>
+          <span style="padding:4px 12px; background:#f0f0ff; border-radius:20px; font-weight:700; color:#4f46e5;">تاريخ التصدير: ${new Date().toLocaleDateString('ar-EG')}</span>
+        </div>
+      </div>
+    `;
+
+    // Charts
     const canvases = document.getElementById('page-responses').querySelectorAll('canvas');
     if (canvases.length > 0) {
-      html += `<div class="charts-section">`;
+      html += `<div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 25px;">`;
       canvases.forEach(canvas => {
         try {
-          html += `<img src="${canvas.toDataURL('image/png')}">`;
+          html += `<img src="${canvas.toDataURL('image/png')}" style="max-width: 48%; max-height: 250px; object-fit: contain; border: 1px solid #eee; border-radius: 8px;">`;
         } catch (e) { }
       });
       html += `</div>`;
     }
 
     // Table
-    html += `<table><thead><tr>`;
-    html += `<th>#</th><th>تاريخ الإرسال</th>`;
+    html += `<table class="pdf-table"><thead><tr>`;
+    html += `<th style="width: 40px;">#</th><th>تاريخ الإرسال</th>`;
     if (form.enableTicketing) html += `<th>الحضور</th>`;
     form.fields.forEach(f => {
-      if (f.type !== 'section_break') {
-        html += `<th>${this.escape(f.label)}</th>`;
-      }
+      if (f.type !== 'section_break') html += `<th>${this.escape(f.label)}</th>`;
     });
     html += `</tr></thead><tbody>`;
 
     form.submissions.forEach((sub, idx) => {
       html += `<tr>`;
-      html += `<td class="col-num">${idx + 1}</td>`;
-      html += `<td class="col-date">${sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-'}</td>`;
+      html += `<td style="text-align:center; font-weight:bold; color:#4f46e5;">${idx + 1}</td>`;
+      html += `<td style="white-space:nowrap; direction:ltr; text-align:right;">${sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('ar-EG') : '-'}</td>`;
 
       if (form.enableTicketing) {
         const attended = sub.data._checked_in === true || sub.data._checked_in === 'true';
-        html += `<td style="text-align:center;"><span class="${attended ? 'badge-attended' : 'badge-absent'}">${attended ? '✅ حضر' : '⏳ لم يحضر'}</span></td>`;
+        html += `<td style="text-align:center;"><span class="${attended ? 'badge-yes' : 'badge-no'}">${attended ? '✅ حضر' : '⏳ لم يحضر'}</span></td>`;
       }
 
       form.fields.forEach(f => {
@@ -676,7 +570,7 @@ Object.assign(window.App, {
           let val = sub.data[f.label];
           if (val === undefined || val === null) val = '-';
           if ((f.type === 'file_upload' || f.type === 'signature') && typeof val === 'string' && (val.startsWith('data:image') || val.startsWith('http'))) {
-            html += `<td style="text-align:center;"><img class="img-thumb" src="${val}"></td>`;
+            html += `<td style="text-align:center;"><img src="${val}" style="max-width:60px; max-height:60px; border-radius:4px; display:block; margin:0 auto;"></td>`;
           } else {
             html += `<td>${this.escape(val)}</td>`;
           }
@@ -686,36 +580,54 @@ Object.assign(window.App, {
     });
 
     html += `</tbody></table>`;
-    html += `<div class="footer">تم إنشاء هذا التقرير بواسطة Menoufia Forms | ${new Date().toLocaleString('ar-EG')}</div>`;
+    html += `<div style="margin-top: 30px; text-align: center; font-size: 0.75rem; color: #999; border-top: 1px solid #eee; padding-top: 15px;">تم إنشاء هذا التقرير بواسطة Menoufia Forms | ${new Date().toLocaleString('ar-EG')}</div>`;
 
-    // Auto-print script for mobile convenience
-    html += `
-    <script>
-      window.onload = function() {
-        setTimeout(function() {
-          window.print();
-        }, 500);
-      };
-    </script>
-    </body></html>`;
+    content.innerHTML = html;
+    overlay.appendChild(actionBar);
+    
+    // Add an outer scroll wrapper so mobile users can pan horizontally to see the beautiful wide table
+    const scrollWrapper = document.createElement('div');
+    scrollWrapper.style.cssText = 'width:100%; height:calc(100% - 70px); overflow:auto; padding:10px; box-sizing:border-box;';
+    scrollWrapper.appendChild(content);
+    overlay.appendChild(scrollWrapper);
 
-    // Open via Blob URL which is much more reliable on mobile webviews than window.open('')
-    try {
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-      this.showToast('تم فتح نافذة التصدير', 'success');
-    } catch(err) {
-      console.error(err);
-      this.showToast('حدث خطأ أثناء فتح النافذة', 'error');
-    }
+    document.body.appendChild(overlay);
+
+    // Event Listeners for Overlay
+    document.getElementById('btn-close-preview').addEventListener('click', () => {
+      overlay.remove();
+    });
+
+    document.getElementById('btn-download-pdf').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-download-pdf');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'جاري التحضير...';
+      btn.disabled = true;
+
+      try {
+        if (!window.html2pdf) {
+          await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+        }
+        
+        const opt = {
+          margin:       10,
+          filename:     `تقرير_ردود_${form.title.replace(/\s+/g, '_')}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, letterRendering: true, windowWidth: 1200 }, // Forces desktop width capture
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+          pagebreak:    { mode: ['css', 'legacy'] }
+        };
+
+        // Convert exactly what the user sees in the content box
+        await window.html2pdf().set(opt).from(content).save();
+        this.showToast('تم التنزيل بنجاح ✅', 'success');
+      } catch (e) {
+        console.error('PDF Error:', e);
+        this.showToast('حدث خطأ أثناء التنزيل', 'error');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    });
   }
 });
