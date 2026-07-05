@@ -305,17 +305,22 @@ Object.assign(window.App, {
           if (val && field.options) {
             const optIndex = field.options.indexOf(val);
             if (optIndex !== -1 && field.optionTargets && field.optionTargets[optIndex]) {
-              target = field.optionTargets[optIndex];
-              break; // use the first matched branching field
+              const fieldTarget = field.optionTargets[optIndex];
+              // Only override if the target is explicitly set and is not the default 'next'
+              // (or if it is 'submit' or a specific section ID).
+              // This allows the last significant branching logic to take effect.
+              if (fieldTarget && fieldTarget !== 'next') {
+                  target = fieldTarget;
+              }
             }
           }
         }
       }
       
-      // 2. If no branch, check section_break nextAction
+      // 2. If no branch (still 'next'), check section_break nextAction
       if (target === 'next' && sectionBreaks[this.state.currentStep]) {
         const sb = sectionBreaks[this.state.currentStep];
-        if (sb.nextAction) {
+        if (sb.nextAction && sb.nextAction !== 'next') {
           target = sb.nextAction;
         }
       }
