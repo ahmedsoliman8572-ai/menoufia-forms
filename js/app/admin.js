@@ -26,6 +26,23 @@ Object.assign(window.App, {
       console.error("Error loading global stats", e);
     }
 
+    // Load System Settings
+    try {
+      const { data, error } = await supabaseClient.from('system_settings').select('value').eq('key', 'isolation_mode').single();
+      const isolationToggle = document.getElementById('admin-isolation-mode');
+      if (isolationToggle) {
+        isolationToggle.disabled = false;
+        if (!error && data) {
+          isolationToggle.checked = data.value === 'true';
+        }
+      }
+    } catch(e) {
+      console.error("Error loading system settings, table might not exist", e);
+      // Fallback
+      const isolationToggle = document.getElementById('admin-isolation-mode');
+      if (isolationToggle) isolationToggle.disabled = false;
+    }
+
     // Render Permissions Manager UI if Owner
     const permissionsContainer = document.getElementById('admin-permissions-container');
     if (permissionsContainer) {
@@ -151,6 +168,24 @@ Object.assign(window.App, {
     } catch (e) {
       console.error(e);
       tbody.innerHTML = `<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--danger);">فشل في جلب البيانات</td></tr>`;
+    }
+  },
+
+  async toggleIsolationMode(isEnabled) {
+    try {
+      const { error } = await supabaseClient
+        .from('system_settings')
+        .upsert({ key: 'isolation_mode', value: isEnabled ? 'true' : 'false' }, { onConflict: 'key' });
+      
+      if (error) throw error;
+      this.showToast('تم تحديث نظام العزل بنجاح', 'success');
+      
+      // Reload forms with new settings if needed
+      this.loadForms();
+    } catch(e) {
+      console.error("Error updating isolation mode:", e);
+      this.showToast('حدث خطأ، يرجى التأكد من إنشاء جدول system_settings بقاعدة البيانات', 'error');
+      document.getElementById('admin-isolation-mode').checked = !isEnabled; // Revert
     }
   },
 
