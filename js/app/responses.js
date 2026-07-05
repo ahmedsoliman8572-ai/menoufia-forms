@@ -490,6 +490,7 @@ Object.assign(window.App, {
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=1024">
   <title>تقرير ردود - ${this.escape(form.title)}</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
@@ -500,6 +501,7 @@ Object.assign(window.App, {
       background: #fff;
       color: #1a1a2e;
       padding: 30px;
+      min-width: 1024px;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
@@ -614,7 +616,8 @@ Object.assign(window.App, {
       margin: 0 auto;
     }
     @media print {
-      body { padding: 15px; }
+      @page { size: landscape; }
+      body { padding: 15px; min-width: 1024px !important; }
       thead { display: table-header-group; }
       tr { page-break-inside: avoid; }
       .no-print { display: none !important; }
@@ -684,25 +687,35 @@ Object.assign(window.App, {
 
     html += `</tbody></table>`;
     html += `<div class="footer">تم إنشاء هذا التقرير بواسطة Menoufia Forms | ${new Date().toLocaleString('ar-EG')}</div>`;
-    html += `</body></html>`;
 
-    // Open in new window for printing
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      this.showToast('يرجى السماح بالنوافذ المنبثقة (Pop-ups) في المتصفح', 'error');
-      return;
+    // Auto-print script for mobile convenience
+    html += `
+    <script>
+      window.onload = function() {
+        setTimeout(function() {
+          window.print();
+        }, 500);
+      };
+    </script>
+    </body></html>`;
+
+    // Open via Blob URL which is much more reliable on mobile webviews than window.open('')
+    try {
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      this.showToast('تم فتح نافذة التصدير', 'success');
+    } catch(err) {
+      console.error(err);
+      this.showToast('حدث خطأ أثناء فتح النافذة', 'error');
     }
-    printWindow.document.write(html);
-    printWindow.document.close();
-
-    // Wait for fonts and images to load then trigger print
-    printWindow.onload = function () {
-      setTimeout(() => {
-        printWindow.focus();
-        printWindow.print();
-      }, 500);
-    };
-
-    this.showToast('تم فتح نافذة التصدير - اختر "Save as PDF" من نافذة الطباعة', 'success');
   }
 });
