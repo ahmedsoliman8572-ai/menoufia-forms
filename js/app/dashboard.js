@@ -93,7 +93,7 @@ Object.assign(window.App, {
         `<span style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:6px; height:6px; background:#94a3b8; border-radius:50%;"></span> مسودة</span>`;
 
       html += `
-        <div class="form-card" onclick="App.navigate('builder', {formId: '${form.id}'})" style="position:relative; overflow:hidden; padding:0; display:flex; flex-direction:column;">
+        <div class="form-card" onclick="if(App.hasPermission('edit')) { App.navigate('builder', {formId: '${form.id}'}) } else { App.showToast('لا تملك صلاحية تعديل النماذج', 'error') }" style="position:relative; overflow:hidden; padding:0; display:flex; flex-direction:column; cursor:${App.hasPermission('edit') ? 'pointer' : 'default'};">
           <div style="height:100px; background:${bgGradient}; position:relative; width:100%;">
             ${statusBadge}
             ${App.hasPermission('delete') ? `<button class="del-btn-x" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف النموذج نهائياً" style="position:absolute; top:12px; left:12px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,0.2); backdrop-filter:blur(4px); color:white; border:none; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; z-index:10; transition:0.3s;" onmouseenter="this.style.background='rgba(239,68,68,0.9)';" onmouseleave="this.style.background='rgba(0,0,0,0.2)';">✕</button>` : ''}
@@ -102,14 +102,14 @@ Object.assign(window.App, {
             <div class="form-card-actions" style="position:static; display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; width:100%;">
               <button onclick="event.stopPropagation(); App.moveToFolder('${form.id}')" title="نقل لمجلد">📁</button>
               <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">🔗</button>
-              <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>
+              ${App.hasPermission('create') ? `<button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>` : ''}
               <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">📊</button>
               <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">👁️</button>
               ${form.enableTicketing ? `<button onclick="event.stopPropagation(); App.copyScannerLink('${form.id}')" title="نسخ رابط المنظمين (الماسح)" style="background:var(--primary-light); color:white;">📷</button>` : ''}
             </div>
             
             ${(() => {
-              const ownerBadge = (App.state.userRole === 'owner' || App.state.userRole === 'super_admin') && form.user_id !== App.state.currentUser.id 
+              const ownerBadge = (App.state.userRole === 'owner') && form.user_id !== App.state.currentUser.id 
                 ? `<span style="background:var(--warning); color:white; font-size:0.75rem; padding:3px 8px; border-radius:12px; margin-right:8px; font-weight:normal; vertical-align:middle; user-select:none;">مشرف آخر</span>` 
                 : '';
               return `<div class="form-card-title" style="font-size:1.1rem; margin-bottom:15px; font-weight:700; display:flex; align-items:center;"><span>${this.escape(form.title)}</span>${ownerBadge}</div>`;
