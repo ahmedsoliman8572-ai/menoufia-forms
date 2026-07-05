@@ -2,42 +2,49 @@
 // MOBILE PDF EXPORT (jsPDF-based)
 // Generates a real .pdf file that downloads
 // directly — works reliably on all mobile browsers.
-// The desktop method (window.print) is untouched.
+// The desktop method (window.print) is NOT modified.
+//
+// This file wraps App.exportResponsesPDF so that
+// on mobile it routes to the jsPDF method instead.
+// responses.js remains 100% untouched.
 // =============================================
-Object.assign(window.App, {
+(function () {
+  // Save a reference to the original desktop PDF export
+  const _originalExportPDF = window.App.exportResponsesPDF;
 
   /**
    * Detect if the current device is mobile/tablet.
    */
-  _isMobileDevice() {
+  function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
       || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /Macintosh/.test(navigator.userAgent));
-  },
+  }
 
   /**
    * Mobile-specific PDF export using jsPDF + AutoTable.
    * Produces a real downloadable .pdf file with RTL Arabic support.
    */
-  async exportResponsesPDFMobile() {
-    const form = this.getForm();
+  async function exportResponsesPDFMobile() {
+    const app = window.App;
+    const form = app.getForm();
     if (!form || !form.submissions || form.submissions.length === 0) {
-      this.showToast('لا توجد ردود لتصديرها', 'error');
+      app.showToast('لا توجد ردود لتصديرها', 'error');
       return;
     }
 
-    this.showToast('جاري إنشاء ملف PDF...', 'info');
+    app.showToast('جاري إنشاء ملف PDF...', 'info');
 
     // Lazy-load jsPDF + AutoTable
     try {
       if (typeof window.jspdf === 'undefined') {
-        await App.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js');
+        await app.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js');
       }
       if (typeof window.jspdf.jsPDF.API.autoTable === 'undefined') {
-        await App.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js');
+        await app.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js');
       }
     } catch (e) {
       console.error('Failed to load jsPDF libraries:', e);
-      this.showToast('فشل تحميل مكتبة PDF. تحقق من اتصال الإنترنت.', 'error');
+      app.showToast('فشل تحميل مكتبة PDF. تحقق من اتصال الإنترنت.', 'error');
       return;
     }
 
@@ -45,21 +52,6 @@ Object.assign(window.App, {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-      // ── Load Tajawal Arabic font (Base64-embedded subset) ──
-      // jsPDF doesn't support Arabic shaping natively, so we'll
-      // use a workaround: reverse the visual order of Arabic text
-      // for display, since jsPDF renders glyphs left-to-right.
-
-      // Helper: reshape Arabic text for jsPDF (reverse for RTL visual order)
-      const rtlText = (text) => {
-        if (!text) return '';
-        const str = String(text);
-        // Reverse the string for RTL visual rendering in jsPDF
-        return str.split('').reverse().join('');
-      };
-
-      // Use a simple approach: don't reverse, just use the text as-is
-      // jsPDF 2.x has improved Unicode support
       const safeText = (text) => {
         if (!text) return '';
         return String(text);
@@ -105,7 +97,6 @@ Object.assign(window.App, {
               chartsInRow = 0;
             }
 
-            // Check if we need a new page for charts
             if (startY + h > pageHeight - 20) {
               doc.addPage();
               startY = margin;
@@ -123,7 +114,6 @@ Object.assign(window.App, {
       }
 
       // ── Table ──
-      // Build headers
       const headers = ['#', 'تاريخ الإرسال'];
       if (form.enableTicketing) {
         headers.push('الحضور');
@@ -134,7 +124,6 @@ Object.assign(window.App, {
         }
       });
 
-      // Build rows
       const rows = [];
       form.submissions.forEach((sub, idx) => {
         const row = [];
@@ -162,13 +151,11 @@ Object.assign(window.App, {
         rows.push(row);
       });
 
-      // Check if we need a new page before the table
       if (startY > pageHeight - 40) {
         doc.addPage();
         startY = margin;
       }
 
-      // Draw the table with AutoTable
       doc.autoTable({
         head: [headers],
         body: rows,
@@ -199,7 +186,6 @@ Object.assign(window.App, {
           1: { cellWidth: 35, halign: 'right', fontSize: 7 },
         },
         didDrawPage: function (data) {
-          // Footer on every page
           doc.setFontSize(7);
           doc.setTextColor(153, 153, 153);
           const pageNum = doc.internal.getCurrentPageInfo().pageNumber;
@@ -214,8 +200,6 @@ Object.assign(window.App, {
 
       // ── Save / Download ──
       const fileName = `responses_${form.title.replace(/\s+/g, '_')}.pdf`;
-
-      // On mobile, use blob + download link for maximum compatibility
       const pdfBlob = doc.output('blob');
       const url = URL.createObjectURL(pdfBlob);
 
@@ -227,13 +211,22 @@ Object.assign(window.App, {
       a.click();
       document.body.removeChild(a);
 
-      // Give the browser time to start the download before revoking
       setTimeout(() => URL.revokeObjectURL(url), 15000);
 
-      this.showToast('تم تصدير PDF بنجاح ✅', 'success');
+      app.showToast('تم تصدير PDF بنجاح ✅', 'success');
     } catch (err) {
       console.error('Mobile PDF export error:', err);
-      this.showToast('حدث خطأ أثناء إنشاء PDF', 'error');
+      app.showToast('حدث خطأ أثناء إنشاء PDF', 'error');
     }
   }
-});
+
+  // ── Override exportResponsesPDF with mobile routing ──
+  // On desktop: calls the original method from responses.js (unchanged)
+  // On mobile: calls the jsPDF-based method above
+  window.App.exportResponsesPDF = function () {
+    if (isMobileDevice()) {
+      return exportResponsesPDFMobile();
+    }
+    return _originalExportPDF.call(this);
+  };
+})();
