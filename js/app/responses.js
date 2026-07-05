@@ -95,8 +95,8 @@ viewResponses(formId) {
 
     if(submissions.length === 0) {
       thead.innerHTML = '';
-      tbody.innerHTML = `<tr><td style="padding:40px; text-align:center; color:var(--text-tertiary);">لا توجد ردود حتى الآن</td></tr>`;
-      document.getElementById('responses-charts').innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-tertiary);">لا توجد بيانات كافية للتحليل</div>`;
+      tbody.innerHTML = `<tr><td style="padding:0; border:none;"><div class="empty-state" style="text-align:center; padding:60px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:1px dashed var(--border); margin:20px 0;"><div style="font-size:50px; margin-bottom:15px; animation: float 3s ease-in-out infinite;">📬</div><h3 style="margin-bottom:10px; color:var(--text);">لا توجد ردود بعد</h3><p style="color:var(--text-secondary); margin:0;">شارك رابط النموذج لتبدأ في جمع الردود وسيتم عرضها هنا مباشرة.</p></div></td></tr>`;
+      document.getElementById('responses-charts').innerHTML = `<div class="empty-state" style="grid-column:1/-1; text-align:center; padding:60px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:1px dashed var(--border);"><div style="font-size:50px; margin-bottom:15px; animation: float 3s ease-in-out infinite; animation-delay: 0.5s;">📊</div><h3 style="margin-bottom:10px; color:var(--text);">التحليلات غير متوفرة</h3><p style="color:var(--text-secondary); margin:0;">لا توجد بيانات كافية لإنشاء الرسوم البيانية. انتظر حتى تتلقى بعض الردود.</p></div>`;
       return;
     }
 
