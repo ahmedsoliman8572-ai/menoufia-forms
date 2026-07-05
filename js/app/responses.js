@@ -181,9 +181,16 @@ viewResponses(formId) {
     }
   },
 
-  renderCharts(form, submissions) {
+  async renderCharts(form, submissions) {
     const chartsContainer = document.getElementById('responses-charts');
     chartsContainer.innerHTML = ''; // Clear previous charts
+    
+    // Lazy load Chart.js if needed
+    if (typeof Chart === 'undefined') {
+      chartsContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary);">جاري تحميل الرسوم البيانية...</div>';
+      await App.loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+      chartsContainer.innerHTML = '';
+    }
     
     // Destroy existing Chart instances to prevent memory leaks and hover glitches
     if(window.responseCharts) {
@@ -293,7 +300,7 @@ viewResponses(formId) {
     });
   },
 
-  exportResponsesExcel() {
+  async exportResponsesExcel() {
     const btn = document.querySelector('#page-responses .builder-toolbar .btn-ghost');
     const originalText = btn ? btn.innerHTML : 'تصدير Excel';
     if(btn) btn.innerHTML = 'جاري التصدير...';
@@ -305,9 +312,15 @@ viewResponses(formId) {
       return;
     }
 
+    // Lazy load XLSX if needed
     if(typeof XLSX === 'undefined') {
-      this.showToast('مكتبة التصدير غير محملة', 'error');
-      return;
+      try {
+        await App.loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+      } catch(e) {
+        this.showToast('فشل تحميل مكتبة التصدير', 'error');
+        if(btn) btn.innerHTML = originalText;
+        return;
+      }
     }
 
     // Prepare data
