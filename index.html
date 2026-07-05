@@ -195,6 +195,17 @@
 
       <!-- Manage Admins -->
       <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; padding:15px; background:var(--bg-tertiary); border-radius:8px; border:1px solid var(--border);">
+          <div>
+            <h4 style="margin:0 0 5px 0;">نظام عزل النماذج (Multi-Tenancy)</h4>
+            <p style="margin:0; font-size:0.9rem; color:var(--text-secondary);">عند التفعيل: كل مشرف يرى ويدير النماذج التي أنشأها بنفسه فقط.</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="admin-isolation-mode" onchange="App.toggleIsolationMode(this.checked)" disabled>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
         <h3 style="margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">إدارة المشرفين والصلاحيات</h3>
         
         <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:flex-end;">
