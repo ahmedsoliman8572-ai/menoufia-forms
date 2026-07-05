@@ -1,4 +1,4 @@
-const CACHE_NAME = 'menoufia-forms-v3';
+const CACHE_NAME = 'menoufia-forms-v4'; // Bumped version for new caching strategy
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const ASSETS_TO_CACHE = [
   './js/validators.js',
   './js/app/core.js',
   './js/app/admin.js',
+  './js/app/crm.js',
   './js/app/i18n.js',
   './js/app/dashboard.js',
   './js/app/builder.js',
@@ -49,27 +50,41 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event: network first, fallback to cache
+// Fetch event: Cache-First for static assets, Network-First for API/HTML
 self.addEventListener('fetch', (event) => {
   // Only handle GET requests for our origin
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith(self.location.origin)) return;
 
-  event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // Cache the new response for future use
-        if (networkResponse.ok) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return networkResponse;
+  const url = new URL(event.request.url);
+  const isStaticAsset = url.pathname.match(/\.(css|js|png|jpg|jpeg|svg|gif|woff2?|ttf)$/i);
+
+  if (isStaticAsset) {
+    // Cache-First strategy for static assets
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse.ok) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        });
       })
-      .catch(() => {
-        // Fallback to cache if network fails
-        return caches.match(event.request);
-      })
-  );
+    );
+  } else {
+    // Network-First strategy for HTML and others
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse.ok) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request))
+    );
+  }
 });
