@@ -264,14 +264,13 @@ Object.assign(window.App, {
     
     // Save to forms table as settings
     try {
-      const { data } = await supabaseClient.from('forms').select('id').eq('id', 'role_permissions').single();
+      const { data } = await supabaseClient.from('forms').select('id').eq('title', 'Role Permissions Configuration').maybeSingle();
       if (data) {
         await supabaseClient.from('forms').update({
           settings: { rolePermissions: this.state.rolePermissions }
-        }).eq('id', 'role_permissions');
+        }).eq('id', data.id);
       } else {
         await supabaseClient.from('forms').insert([{
-          id: 'role_permissions',
           title: 'Role Permissions Configuration',
           description: 'System role permissions configuration',
           fields: [],
