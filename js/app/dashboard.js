@@ -98,15 +98,15 @@ Object.assign(window.App, {
             ${statusBadge}
             ${App.hasPermission('delete') ? `<button class="del-btn-x" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف النموذج نهائياً" style="position:absolute; top:12px; left:12px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,0.2); backdrop-filter:blur(4px); color:white; border:none; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; z-index:10; transition:0.3s;" onmouseenter="this.style.background='rgba(239,68,68,0.9)';" onmouseleave="this.style.background='rgba(0,0,0,0.2)';">✕</button>` : ''}
           </div>
-          <div class="form-card-actions" style="margin-left: 30px; top:85px;">
-            <button onclick="event.stopPropagation(); App.moveToFolder('${form.id}')" title="نقل لمجلد">📁</button>
-            <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">🔗</button>
-            <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>
-            <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">📊</button>
-            <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">👁️</button>
-            ${form.enableTicketing ? `<button onclick="event.stopPropagation(); App.copyScannerLink('${form.id}')" title="نسخ رابط المنظمين (الماسح)" style="background:var(--primary-light); color:white;">📷</button>` : ''}
-          </div>
-          <div class="form-card-body" style="padding:25px 20px 20px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
+          <div class="form-card-body" style="padding:20px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
+            <div class="form-card-actions" style="position:static; display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; width:100%;">
+              <button onclick="event.stopPropagation(); App.moveToFolder('${form.id}')" title="نقل لمجلد">📁</button>
+              <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">🔗</button>
+              <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>
+              <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">📊</button>
+              <button onclick="event.stopPropagation(); App.navigate('fill', {formId: '${form.id}'})" title="فتح النموذج">👁️</button>
+              ${form.enableTicketing ? `<button onclick="event.stopPropagation(); App.copyScannerLink('${form.id}')" title="نسخ رابط المنظمين (الماسح)" style="background:var(--primary-light); color:white;">📷</button>` : ''}
+            </div>
             <div class="form-card-title" style="font-size:1.1rem; margin-bottom:15px; font-weight:700;">${this.escape(form.title)}</div>
             <div class="form-card-meta" style="border-top:1px solid var(--border); padding-top:12px; margin-top:auto;">
               <span style="display:flex; align-items:center; gap:5px;"><span>📋</span> ${form.fields ? form.fields.length : 0} حقول</span>
