@@ -1,7 +1,8 @@
-const CACHE_NAME = 'menoufia-forms-v4'; // Bumped version for new caching strategy
+const CACHE_NAME = 'menoufia-forms-v5'; // Bumped version for new caching strategy
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './offline.html',
   './css/variables.css',
   './css/base.css',
   './css/components.css',
@@ -84,7 +85,15 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => {
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+            // If it's an HTML request and network+cache failed, return offline page
+            if (event.request.headers.get('accept').includes('text/html')) {
+              return caches.match('./offline.html');
+            }
+          });
+        })
     );
   }
 });
