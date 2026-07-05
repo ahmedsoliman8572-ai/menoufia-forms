@@ -503,7 +503,7 @@ Object.assign(window.App, {
       background: #fff;
       color: #1a1a2e;
       padding: 30px;
-      min-width: 1024px;
+      width: 100%;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
@@ -551,6 +551,7 @@ Object.assign(window.App, {
       border-collapse: collapse;
       font-size: 0.85rem;
       margin-top: 10px;
+      table-layout: auto;
     }
     thead th {
       background: #4f46e5 !important;
@@ -558,15 +559,18 @@ Object.assign(window.App, {
       padding: 10px 8px;
       font-weight: 700;
       font-size: 0.9rem;
-      white-space: nowrap;
       border: 1px solid #3730a3;
       text-align: center;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
     tbody td {
       padding: 8px;
       border: 1px solid #e2e8f0;
       text-align: right;
       vertical-align: middle;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
     tbody tr:nth-child(even) {
       background: #f8fafc !important;
@@ -618,8 +622,11 @@ Object.assign(window.App, {
       margin: 0 auto;
     }
     @media print {
-      @page { size: landscape; }
-      body { padding: 15px; min-width: 1024px !important; }
+      @page { size: landscape; margin: 10mm; }
+      body { padding: 10px; width: 100% !important; }
+      table { font-size: 0.75rem; }
+      thead th { font-size: 0.75rem; padding: 6px 4px; }
+      tbody td { padding: 6px 4px; }
       thead { display: table-header-group; }
       tr { page-break-inside: avoid; }
       .no-print { display: none !important; }
