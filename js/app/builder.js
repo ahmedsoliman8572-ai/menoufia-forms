@@ -241,15 +241,48 @@ Object.assign(window.App, {
         ${(field.type === 'single_choice' || field.type === 'multiple_choice' || field.type === 'dropdown') ? `
           <div class="form-group">
             <label>الخيارات</label>
+            ${(field.type === 'single_choice' || field.type === 'dropdown') ? `
+            <div class="toggle-row" style="margin-bottom:10px; background:rgba(0,0,0,0.02); padding:8px; border-radius:4px;">
+              <label style="font-size:0.9rem;">الانتقال إلى قسم استناداً إلى الإجابة</label>
+              <label class="toggle-switch">
+                <input type="checkbox" ${field.logicBranching ? 'checked' : ''} onchange="App.updateFieldProp('${field.id}', 'logicBranching', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            ` : ''}
             <div class="option-edit-list">
               ${(field.options||[]).map((opt, i) => `
-                <div class="option-edit-item">
-                  <input type="text" class="form-control" value="${this.escape(opt)}" oninput="App.updateOption('${field.id}', ${i}, this.value)" onkeydown="if(event.key === 'Enter') { event.preventDefault(); App.addOption('${field.id}'); }" ${isSmart ? 'readonly title="لا يمكن تعديل خيارات الحقل الذكي"' : ''}>
+                <div class="option-edit-item" style="${field.logicBranching ? 'flex-wrap:wrap;' : ''}">
+                  <input type="text" class="form-control" style="flex:1;" value="${this.escape(opt)}" oninput="App.updateOption('${field.id}', ${i}, this.value)" onkeydown="if(event.key === 'Enter') { event.preventDefault(); App.addOption('${field.id}'); }" ${isSmart ? 'readonly title="لا يمكن تعديل خيارات الحقل الذكي"' : ''}>
                   ${!isSmart ? `<button class="icon-btn" style="color:var(--error)" onclick="App.removeOption('${field.id}', ${i})">✕</button>` : ''}
+                  ${field.logicBranching ? `
+                    <div style="width:100%; margin-top:5px; padding-right:10px;">
+                      <select class="form-control" style="font-size:0.85rem; padding:4px; height:auto;" onchange="App.updateOptionTarget('${field.id}', ${i}, this.value)">
+                        <option value="next" ${(!(field.optionTargets && field.optionTargets[i]) || field.optionTargets[i] === 'next') ? 'selected' : ''}>متابعة إلى القسم التالي</option>
+                        <option value="submit" ${((field.optionTargets && field.optionTargets[i]) === 'submit') ? 'selected' : ''}>إرسال النموذج</option>
+                        ${form.fields.filter(f => f.type === 'section_break').map((f, idx) => `
+                          <option value="${f.id}" ${((field.optionTargets && field.optionTargets[i]) === f.id) ? 'selected' : ''}>الانتقال إلى قسم ${idx + 2}</option>
+                        `).join('')}
+                      </select>
+                    </div>
+                  ` : ''}
                 </div>
               `).join('')}
             </div>
             ${!isSmart ? `<button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="App.addOption('${field.id}')">+ إضافة خيار</button>` : ''}
+          </div>
+        ` : ''}
+        
+        ${field.type === 'section_break' ? `
+          <div class="form-group" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);">
+            <label style="font-weight:600">بعد هذا القسم (عند المتابعة):</label>
+            <select class="form-control" onchange="App.updateFieldProp('${field.id}', 'nextAction', this.value)">
+              <option value="next" ${(!field.nextAction || field.nextAction === 'next') ? 'selected' : ''}>متابعة إلى القسم التالي</option>
+              <option value="submit" ${field.nextAction === 'submit' ? 'selected' : ''}>إرسال النموذج</option>
+              ${form.fields.filter(f => f.type === 'section_break').map((f, idx) => `
+                <option value="${f.id}" ${field.nextAction === f.id ? 'selected' : ''}>الانتقال إلى قسم ${idx + 2}</option>
+              `).join('')}
+            </select>
           </div>
         ` : ''}
 
@@ -338,13 +371,28 @@ Object.assign(window.App, {
     const f = this.getForm(); const field = f.fields.find(x => x.id === fid);
     if(field && field.options) { this.saveHistoryState(); field.options[index] = value; this.save(); this.renderCanvas(); }
   },
+  updateOptionTarget(fid, index, value) {
+    const f = this.getForm(); const field = f.fields.find(x => x.id === fid);
+    if(field) {
+      this.saveHistoryState();
+      if(!field.optionTargets) field.optionTargets = [];
+      field.optionTargets[index] = value;
+      this.save();
+      this.renderSettings();
+    }
+  },
   addOption(fid) {
     const f = this.getForm(); const field = f.fields.find(x => x.id === fid);
     if(field && field.options) { this.saveHistoryState(); field.options.push(`خيار ${field.options.length + 1}`); this.save(); this.renderCanvas(); this.renderSettings(); }
   },
   removeOption(fid, index) {
     const f = this.getForm(); const field = f.fields.find(x => x.id === fid);
-    if(field && field.options && field.options.length > 1) { this.saveHistoryState(); field.options.splice(index, 1); this.save(); this.renderCanvas(); this.renderSettings(); }
+    if(field && field.options && field.options.length > 1) { 
+      this.saveHistoryState(); 
+      field.options.splice(index, 1); 
+      if(field.optionTargets) field.optionTargets.splice(index, 1);
+      this.save(); this.renderCanvas(); this.renderSettings(); 
+    }
   },
   
   selectField(id) { this.state.selectedFieldId = id; this.renderCanvas(); },
