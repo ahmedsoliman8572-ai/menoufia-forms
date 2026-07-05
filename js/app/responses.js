@@ -191,8 +191,8 @@ viewResponses(formId) {
     }
     window.responseCharts = [];
 
-    const chartableTypes = ['multiple_choice', 'checkboxes', 'dropdown', 'linear_scale'];
-    const fieldsToChart = form.fields.filter(f => chartableTypes.includes(f.type));
+    const chartableTypes = ['single_choice', 'multiple_choice', 'dropdown', 'linear_scale', 'rating'];
+    const fieldsToChart = form.fields.filter(f => chartableTypes.includes(f.type) || chartableTypes.includes(f.originalType));
 
     if(fieldsToChart.length === 0) {
       chartsContainer.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--text-tertiary);">لا توجد أسئلة قابلة للتحليل البياني (مثل الاختيارات أو التقييم)</div>`;
@@ -234,7 +234,7 @@ viewResponses(formId) {
       submissions.forEach(sub => {
         let val = sub.data[field.label];
         if(val) {
-          if(field.type === 'checkboxes' && Array.isArray(val)) {
+          if(field.type === 'multiple_choice' && Array.isArray(val)) {
             val.forEach(v => {
               counts[v] = (counts[v] || 0) + 1;
               totalAnswers++;
@@ -260,7 +260,7 @@ viewResponses(formId) {
       ];
 
       let type = 'pie';
-      if(field.type === 'checkboxes' || field.type === 'linear_scale') type = 'bar';
+      if(field.type === 'multiple_choice' || field.type === 'linear_scale') type = 'bar';
       if(field.type === 'dropdown') type = 'doughnut';
 
       const ctx = canvas.getContext('2d');
