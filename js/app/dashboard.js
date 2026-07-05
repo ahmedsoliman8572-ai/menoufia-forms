@@ -53,6 +53,18 @@ Object.assign(window.App, {
       </div>
     `;
 
+    // Extract unique folders
+    const folders = [...new Set(this.state.forms.map(f => f.settings?.folder_name).filter(Boolean))];
+
+    html += `
+      <div style="display:flex; gap:10px; margin-bottom: 20px; overflow-x:auto; padding-bottom:10px;">
+        <button class="btn ${!this.state.currentFolder ? 'btn-primary' : 'btn-secondary'}" onclick="App.state.currentFolder = null; App.renderDashboard();" style="border-radius:20px;">الكل</button>
+        ${folders.map(folder => `
+          <button class="btn ${this.state.currentFolder === folder ? 'btn-primary' : 'btn-secondary'}" onclick="App.state.currentFolder = '${this.escape(folder)}'; App.renderDashboard();" style="border-radius:20px;">📁 ${this.escape(folder)}</button>
+        `).join('')}
+      </div>
+    `;
+
     // Colors for gradients based on index
     const gradients = [
       'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
@@ -63,7 +75,15 @@ Object.assign(window.App, {
     ];
 
     html += `<div class="forms-grid">`;
-    this.state.forms.forEach((form, idx) => {
+    const filteredForms = this.state.currentFolder 
+      ? this.state.forms.filter(f => f.settings?.folder_name === this.state.currentFolder)
+      : this.state.forms;
+
+    if (filteredForms.length === 0 && this.state.currentFolder) {
+      html += `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-secondary);">المجلد فارغ</div>`;
+    }
+
+    filteredForms.forEach((form, idx) => {
       const date = new Date(form.created_at || form.createdAt || Date.now()).toLocaleDateString('ar-EG');
       const responsesCount = form.responses_count || (form.submissions ? form.submissions.length : 0);
       const bgGradient = gradients[idx % gradients.length];
@@ -79,6 +99,7 @@ Object.assign(window.App, {
             ${App.hasPermission('delete') ? `<button class="del-btn-x" onclick="event.stopPropagation(); App.deleteForm('${form.id}')" title="حذف النموذج نهائياً" style="position:absolute; top:12px; left:12px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,0.2); backdrop-filter:blur(4px); color:white; border:none; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; z-index:10; transition:0.3s;" onmouseenter="this.style.background='rgba(239,68,68,0.9)';" onmouseleave="this.style.background='rgba(0,0,0,0.2)';">✕</button>` : ''}
           </div>
           <div class="form-card-actions" style="margin-left: 30px; top:85px;">
+            <button onclick="event.stopPropagation(); App.moveToFolder('${form.id}')" title="نقل لمجلد">📁</button>
             <button onclick="event.stopPropagation(); App.state.currentFormId='${form.id}'; App.openShareModal()" title="مشاركة الرابط">🔗</button>
             <button onclick="event.stopPropagation(); App.duplicateForm('${form.id}')" title="نسخ النموذج">📋</button>
             <button onclick="event.stopPropagation(); App.viewResponses('${form.id}')" title="الردود والتحليلات">📊</button>
@@ -230,5 +251,37 @@ Object.assign(window.App, {
     }
   },
 
-  
+  moveToFolder(formId) {
+    this.state.formToMove = formId;
+    const form = this.state.forms.find(f => f.id === formId);
+    document.getElementById('folder-name-input').value = form?.settings?.folder_name || '';
+    document.getElementById('folder-modal').style.display = 'flex';
+  },
+
+  async confirmCreateFolder() {
+    const folderName = document.getElementById('folder-name-input').value.trim();
+    if(!this.state.formToMove) return;
+
+    const form = this.state.forms.find(f => f.id === this.state.formToMove);
+    if(form) {
+      if(!form.settings) form.settings = {};
+      form.settings.folder_name = folderName || null;
+      
+      try {
+        const { error } = await supabaseClient
+          .from('forms')
+          .update({ settings: form.settings })
+          .eq('id', form.id);
+          
+        if (error) throw error;
+        this.showToast('تم تحديث المجلد بنجاح', 'success');
+        this.renderDashboard();
+      } catch (err) {
+        console.error(err);
+        this.showToast('فشل في حفظ المجلد', 'error');
+      }
+    }
+    document.getElementById('folder-modal').style.display = 'none';
+    this.state.formToMove = null;
+  }
 });
