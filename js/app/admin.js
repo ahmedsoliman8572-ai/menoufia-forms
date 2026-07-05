@@ -26,23 +26,6 @@ Object.assign(window.App, {
       console.error("Error loading global stats", e);
     }
 
-    // Load System Settings
-    try {
-      const { data, error } = await supabaseClient.from('system_settings').select('value').eq('key', 'isolation_mode').single();
-      const isolationToggle = document.getElementById('admin-isolation-mode');
-      if (isolationToggle) {
-        isolationToggle.disabled = false;
-        if (!error && data) {
-          isolationToggle.checked = data.value === 'true';
-        }
-      }
-    } catch(e) {
-      console.error("Error loading system settings, table might not exist", e);
-      // Fallback
-      const isolationToggle = document.getElementById('admin-isolation-mode');
-      if (isolationToggle) isolationToggle.disabled = false;
-    }
-
     // Render Permissions Manager UI if Owner
     const permissionsContainer = document.getElementById('admin-permissions-container');
     if (permissionsContainer) {
@@ -137,8 +120,8 @@ Object.assign(window.App, {
         <tr>
           <td style="padding:10px; border:1px solid var(--border); direction:ltr; text-align:right;">${this.escape(creator.email)}</td>
           <td style="padding:10px; border:1px solid var(--border);">
-            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'owner' ? '#8b5cf6' : creator.role === 'super_admin' ? 'var(--primary)' : creator.role === 'pending' ? 'var(--warning)' : 'var(--bg-secondary)'}; color: ${creator.role === 'owner' || creator.role === 'super_admin' || creator.role === 'pending' ? '#fff' : 'var(--text-primary)'};">
-              ${creator.role === 'owner' ? 'المالك' : creator.role === 'super_admin' ? 'مدير عام' : creator.role === 'pending' ? 'في الانتظار' : 'مدير عادي'}
+            <span style="display:inline-block; padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:600; background: ${creator.role === 'owner' ? '#8b5cf6' : creator.role === 'super_admin' ? 'var(--primary)' : creator.role === 'restricted_admin' ? 'var(--warning)' : creator.role === 'pending' ? '#f59e0b' : 'var(--bg-secondary)'}; color: ${creator.role === 'owner' || creator.role === 'super_admin' || creator.role === 'restricted_admin' || creator.role === 'pending' ? '#fff' : 'var(--text-primary)'};">
+              ${creator.role === 'owner' ? 'المالك' : creator.role === 'super_admin' ? 'مدير عام' : creator.role === 'restricted_admin' ? 'مدير مقيد' : creator.role === 'pending' ? 'في الانتظار' : 'مدير عادي'}
             </span>
           </td>
           <td style="padding:10px; border:1px solid var(--border); text-align:center;">
@@ -151,11 +134,12 @@ Object.assign(window.App, {
                 ? `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.approveCreator('${creator.email}')">قبول</button>
                    <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}', true)">رفض</button>`
                 : App.state.userRole === 'owner' && creator.role !== 'owner'
-                  ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'super_admin')">سوبر أدمن</button>
-                     <button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'admin')">أدمن</button>
+                  ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'super_admin')">عام</button>
+                     ${creator.role === 'admin' ? `<button class="btn btn-primary btn-sm" style="background:var(--warning); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'restricted_admin')">تقييد</button>` : `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'admin')">عادي</button>`}
                      <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">حذف</button>`
-                  : creator.role === 'admin' && App.state.userRole === 'super_admin'
-                    ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'super_admin')">ترقية</button>
+                  : (creator.role === 'admin' || creator.role === 'restricted_admin') && App.state.userRole === 'super_admin'
+                    ? `<button class="btn btn-primary btn-sm" style="background:var(--primary); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'super_admin')">ترقية لعام</button>
+                       ${creator.role === 'admin' ? `<button class="btn btn-primary btn-sm" style="background:var(--warning); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'restricted_admin')">تقييد</button>` : `<button class="btn btn-primary btn-sm" style="background:var(--success); padding: 4px 10px;" onclick="App.promoteCreator('${creator.email}', 'admin')">ترقية لعادي</button>`}
                        <button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="App.deleteCreator('${creator.email}')">حذف</button>`
                     : creator.role === 'super_admin' || creator.role === 'owner'
                       ? `<span style="color:var(--text-tertiary); font-size:0.8rem;">لا يمكن التعديل</span>`
@@ -168,24 +152,6 @@ Object.assign(window.App, {
     } catch (e) {
       console.error(e);
       tbody.innerHTML = `<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--danger);">فشل في جلب البيانات</td></tr>`;
-    }
-  },
-
-  async toggleIsolationMode(isEnabled) {
-    try {
-      const { error } = await supabaseClient
-        .from('system_settings')
-        .upsert({ key: 'isolation_mode', value: isEnabled ? 'true' : 'false' }, { onConflict: 'key' });
-      
-      if (error) throw error;
-      this.showToast('تم تحديث نظام العزل بنجاح', 'success');
-      
-      // Reload forms with new settings if needed
-      this.loadForms();
-    } catch(e) {
-      console.error("Error updating isolation mode:", e);
-      this.showToast('حدث خطأ، يرجى التأكد من إنشاء جدول system_settings بقاعدة البيانات', 'error');
-      document.getElementById('admin-isolation-mode').checked = !isEnabled; // Revert
     }
   },
 
