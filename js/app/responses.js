@@ -492,8 +492,10 @@ Object.assign(window.App, {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1024">
   <title>تقرير ردود - ${this.escape(form.title)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Tajawal', 'Segoe UI', Arial, sans-serif;
