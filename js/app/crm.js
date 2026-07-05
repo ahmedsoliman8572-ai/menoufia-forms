@@ -18,7 +18,7 @@ Object.assign(window.App, {
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-tertiary);">لا توجد جهات اتصال حتى الآن.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="padding:0; border:none;"><div class="empty-state" style="text-align:center; padding:60px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:1px dashed var(--border); margin:20px 0;"><div style="font-size:50px; margin-bottom:15px; animation: float 3s ease-in-out infinite;">👥</div><h3 style="margin-bottom:10px; color:var(--text);">لا توجد جهات اتصال</h3><p style="color:var(--text-secondary); margin:0;">لم يتم تسجيل أي جهات اتصال من خلال النماذج حتى الآن.</p></div></td></tr>';
         return;
       }
 
