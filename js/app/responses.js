@@ -201,8 +201,84 @@ viewResponses(formId) {
     const chartableTypes = ['single_choice', 'multiple_choice', 'dropdown', 'linear_scale', 'rating'];
     const fieldsToChart = form.fields.filter(f => chartableTypes.includes(f.type) || chartableTypes.includes(f.originalType));
 
+    // Time Statistics Chart (Timeline)
+    if(submissions.length > 0) {
+      const timeCard = document.createElement('div');
+      timeCard.className = 'stat-card';
+      timeCard.style.gridColumn = '1 / -1'; // Span full width
+      timeCard.style.display = 'flex';
+      timeCard.style.flexDirection = 'column';
+      timeCard.style.alignItems = 'center';
+      
+      const timeTitle = document.createElement('h3');
+      timeTitle.innerText = 'إحصائيات الردود بمرور الوقت';
+      timeTitle.style.marginBottom = '15px';
+      timeTitle.style.width = '100%';
+      timeTitle.style.textAlign = 'right';
+      timeCard.appendChild(timeTitle);
+
+      const timeCanvasWrapper = document.createElement('div');
+      timeCanvasWrapper.style.position = 'relative';
+      timeCanvasWrapper.style.width = '100%';
+      timeCanvasWrapper.style.height = '300px';
+      
+      const timeCanvas = document.createElement('canvas');
+      timeCanvas.id = 'chart-timeline';
+      timeCanvasWrapper.appendChild(timeCanvas);
+      timeCard.appendChild(timeCanvasWrapper);
+      
+      chartsContainer.appendChild(timeCard);
+
+      // Aggregate data by date
+      const dateCounts = {};
+      submissions.forEach(sub => {
+        const dateStr = new Date(sub.submittedAt).toLocaleDateString('en-CA'); // YYYY-MM-DD format
+        dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
+      });
+
+      // Sort dates
+      const sortedDates = Object.keys(dateCounts).sort();
+      const labels = sortedDates.map(d => new Date(d).toLocaleDateString('ar-EG'));
+      const dataPoints = sortedDates.map(d => dateCounts[d]);
+
+      const ctx = timeCanvas.getContext('2d');
+      const timeChart = new window.Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'عدد الردود',
+            data: dataPoints,
+            backgroundColor: 'rgba(99, 102, 241, 0.2)',
+            borderColor: 'rgba(99, 102, 241, 1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: 'rgba(99, 102, 241, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+          }
+        }
+      });
+      window.responseCharts.push(timeChart);
+    }
+
     if(fieldsToChart.length === 0) {
-      chartsContainer.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--text-tertiary);">لا توجد أسئلة قابلة للتحليل البياني (مثل الاختيارات أو التقييم)</div>`;
+      const msg = document.createElement('div');
+      msg.style.gridColumn = '1/-1';
+      msg.style.textAlign = 'center';
+      msg.style.padding = '20px';
+      msg.style.color = 'var(--text-tertiary)';
+      msg.innerText = 'لا توجد أسئلة أخرى قابلة للتحليل البياني (مثل الاختيارات أو التقييم)';
+      chartsContainer.appendChild(msg);
       return;
     }
 
@@ -369,5 +445,92 @@ viewResponses(formId) {
     // Download
     XLSX.writeFile(wb, `responses_${form.title.replace(/\s+/g, '_')}.xlsx`);
     if(btn) btn.innerHTML = originalText;
+  },
+
+  filterResponses(query) {
+    const tbody = document.getElementById('responses-table-body');
+    if(!tbody) return;
+    
+    const rows = tbody.querySelectorAll('tr');
+    const q = query.toLowerCase().trim();
+    
+    let visibleCount = 0;
+    rows.forEach(row => {
+      // Don't filter the empty state message
+      if(row.querySelector('.empty-state')) return;
+      
+      const text = row.innerText.toLowerCase();
+      if(!q || text.includes(q)) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Update the count summary if available
+    const countVal = document.getElementById('responses-count-val');
+    if (countVal && q) {
+      countVal.innerText = `${visibleCount} (مطابق للبحث)`;
+    } else if (countVal && !q) {
+      const form = this.getForm();
+      countVal.innerText = form ? (form.responsesCount || form.submissions?.length || 0) : visibleCount;
+    }
+  },
+
+  async exportResponsesPDF() {
+    const btn = document.querySelector('button[onclick="App.exportResponsesPDF()"]');
+    const originalText = btn ? btn.innerHTML : 'تصدير PDF';
+    if(btn) btn.innerHTML = 'جاري التصدير...';
+    
+    this.showToast('جاري تجهيز ملف الـ PDF...', 'info');
+    
+    if(!window.html2pdf) {
+      await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+    }
+    
+    const element = document.getElementById('page-responses').cloneNode(true);
+    
+    // Remove unwanted UI elements from PDF
+    const toolbar = element.querySelector('.builder-toolbar');
+    if(toolbar) toolbar.style.display = 'none';
+    const searchBar = element.querySelector('#responses-search-input');
+    if(searchBar && searchBar.parentElement.parentElement) {
+      searchBar.parentElement.parentElement.style.display = 'none';
+    }
+    const loadMoreBtn = element.querySelector('#load-more-container');
+    if(loadMoreBtn) loadMoreBtn.style.display = 'none';
+    
+    // Replace canvases with images
+    const originalCanvases = document.getElementById('page-responses').querySelectorAll('canvas');
+    const clonedCanvases = element.querySelectorAll('canvas');
+    originalCanvases.forEach((canvas, i) => {
+        if(clonedCanvases[i]) {
+          const img = document.createElement('img');
+          img.src = canvas.toDataURL('image/png');
+          img.style.width = '100%';
+          img.style.maxHeight = '300px';
+          img.style.objectFit = 'contain';
+          clonedCanvases[i].parentNode.replaceChild(img, clonedCanvases[i]);
+        }
+    });
+
+    const form = this.getForm();
+    const opt = {
+      margin:       10,
+      filename:     `تقرير_ردود_${form.title.replace(/\s+/g, '_')}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    // Render and download
+    window.html2pdf().set(opt).from(element).save().then(() => {
+      if(btn) btn.innerHTML = originalText;
+    }).catch(err => {
+      console.error('PDF Export Error:', err);
+      if(this.showToast) this.showToast('حدث خطأ أثناء التصدير', 'error');
+      if(btn) btn.innerHTML = originalText;
+    });
   }
 });
