@@ -24,6 +24,10 @@ window.App = {
   },
 
   async init() {
+    // Restore saved theme from localStorage
+    const savedTheme = localStorage.getItem('menoufia_forms_theme');
+    if (savedTheme) this.state.settings.theme = savedTheme;
+
     this.applyTheme();
     this.initKeyboardShortcuts();
 
@@ -315,7 +319,14 @@ window.App = {
     const navbar = document.getElementById('navbar');
     if (navbar) navbar.style.display = 'none';
 
-    // Initialize Scanner
+    // Initialize Scanner (lazy load if needed)
+    if (typeof Html5QrcodeScanner === 'undefined') {
+      const scannerResult = document.getElementById('scanner-result');
+      if(scannerResult) scannerResult.innerHTML = '<p>جاري تحميل الكاميرا...</p>';
+      await this.loadScript('https://unpkg.com/html5-qrcode');
+      if(scannerResult) scannerResult.innerHTML = '';
+    }
+
     if (!this._html5QrcodeScanner) {
       this._html5QrcodeScanner = new Html5QrcodeScanner("scanner-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, /* verbose= */ false);
 
@@ -397,9 +408,6 @@ window.App = {
   },
 
   applyTheme() {
-    // Restore saved theme from localStorage
-    const savedTheme = localStorage.getItem('menoufia_forms_theme');
-    if (savedTheme) this.state.settings.theme = savedTheme;
     document.documentElement.setAttribute('data-theme', this.state.settings.theme);
     document.getElementById('theme-toggle').innerText = this.state.settings.theme === 'dark' ? '☀️' : '🌙';
   },
@@ -431,6 +439,16 @@ window.App = {
 
   initKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
+      // Close all modals on Escape
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal, .drawer').forEach(m => {
+          m.style.display = 'none';
+          m.classList.remove('open', 'show');
+        });
+        const overlay = document.getElementById('drawer-overlay');
+        if (overlay) overlay.classList.remove('show');
+      }
+
       // Only in builder view
       if (this.state.currentView !== 'builder') return;
 
